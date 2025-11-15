@@ -12,13 +12,13 @@ We can loosely educate the user on what happens when certain elements are mixed 
 
 # Research:
 
-We need to understand how certain planets have evolved to be the geology and biology of how they are today. The game needs to be mostly based on real scientific facts. There are examples in the adjacent markdown files:
-EarthExample.md
-IceWorldExample.md
-JupiterExample.md
-LavaWorldExample.md
-VenusExample.md
-WaterWorldExample.md
+We need to understand how certain planets have evolved to be the geology and biology of how they are today. The game needs to be mostly based on real scientific facts. There are examples in the adjacent markdown files on how different element compositions turned into real planets in nature. We refer to these skills files to understand results better:
+skills/EarthExample.md
+skills/IceWorldExample.md
+skills/JupiterExample.md
+skills/LavaWorldExample.md
+skills/VenusExample.md
+skills/WaterWorldExample.md
 
 # Elements to consider to add to the recipe of the planet:
 
@@ -318,6 +318,241 @@ Planetary evolution isn’t just chemistry — it’s a balance of **distance, e
 
 * **Just right:** Oceans, weather, and geology — the ingredients of habitability.
 
-Each planet’s story is the result of these interacting factors — gravity sculpting heat, motion shaping air, and starlight defining everything else.
+Each planet's story is the result of these interacting factors — gravity sculpting heat, motion shaping air, and starlight defining everything else.
+
+---
+
+# Development Phases
+
+## Phase 1: Project Setup & UI Foundation
+**Goal:** Set up the Next.js project with Radix UI and basic routing structure
+
+### Tasks:
+- Install and configure Radix UI Themes (reference: https://www.radix-ui.com/themes/docs/overview/getting-started)
+- Set up Next.js App Router with page structure
+- Create basic layout components (Header, Navigation)
+- Implement routing between Landing, Builder, and Results screens
+- Set up TypeScript types for planet data models
+- Configure Tailwind CSS with Radix UI integration
+
+### Deliverable:
+A working Next.js app with Radix UI components, basic navigation, and styled layout foundation.
+
+---
+
+## Phase 2: Landing Screen & Welcome Experience
+**Goal:** Create an inviting entry point to the application
+
+### Tasks:
+- Build landing page with 60/40 split layout (image left, text right)
+- Create welcome hero image or placeholder
+- Write marketing copy summarizing the game concept
+- Implement "Let's Create!" CTA button with navigation to builder
+- Add "About" button with modal/dialog containing app info and publisher details
+- Style with Radix UI components for professional appearance
+
+### Deliverable:
+A polished landing screen that introduces users to the concept and guides them into the builder.
+
+---
+
+## Phase 3: Three.js Scene Setup & Primordial Gas Cloud
+**Goal:** Build the 3D visualization foundation with interactive gas cloud
+
+### Tasks:
+- Install and configure Three.js with React Three Fiber
+- Create main 75/25 split layout (3D scene left, controls right)
+- Implement swirling particle system for primordial gas cloud
+- Add camera controls (rotation only, no zoom)
+- Implement automatic slow rotation when user isn't interacting
+- Create responsive lighting system that adjusts with star parameters
+- Add particle density control linked to mass slider
+
+### Deliverable:
+An interactive 3D gas cloud that responds to user input with realistic particle effects.
+
+---
+
+## Phase 4: Configuration Panel & Element System
+**Goal:** Build the right-side configuration interface with element controls
+
+### Tasks:
+- Create element data model with 15 elements from PROJECT.md (H, He, O, C, Si, Fe, Mg, S, N, Al, Ca, Na, K, P, Ni)
+- Design periodic table-style element cards with colors and symbols
+- Implement +/- percentage controls for each element
+- Build environmental parameter sliders:
+  - Distance from star (0.1 - 10 AU, default 1 AU)
+  - Star type (radio selection: O, B, A, F, G, K, M types)
+  - Initial mass (0.1x - 100x Earth mass)
+  - Rotation speed (1 hour - 100 days, default 24 hours)
+- Add "Build" button to trigger simulation
+- Create bottom panel showing timeframe (default: 5 Billion Years Ago)
+
+### Deliverable:
+A fully functional configuration panel where users can adjust all planet parameters with immediate visual feedback.
+
+---
+
+## Phase 5: Interactive Visual Feedback System
+**Goal:** Connect configuration changes to real-time 3D animations
+
+### Tasks:
+- Implement comet animation when element percentages increase (colored by element)
+- Add gas ejection animation when element percentages decrease
+- Update gas cloud color based on aggregate element composition
+- Adjust scene luminosity based on star type and distance
+- Modulate particle density based on mass slider
+- Create smooth transitions for all visual changes
+- Optimize performance for real-time updates
+
+### Deliverable:
+A responsive 3D visualization that immediately reflects every configuration change with appropriate animations.
+
+---
+
+## Phase 6: Planet Formation Animation & Transition
+**Goal:** Create the dramatic 6-second formation sequence
+
+### Tasks:
+- Implement accelerating swirl animation (gas condenses toward center)
+- Add brightness ramping effect during condensation
+- Create explosion/flash effect that "burns out" the camera view
+- Implement fade-in transition revealing the formed planet
+- Lock configuration panel controls after "Build" is clicked
+- Transition bottom panel timeline from 5B years ago to present (countdown over 6 seconds)
+- Maintain planet rotation during and after formation
+
+### Deliverable:
+A cinematic planet formation sequence that transitions from gas cloud to fully formed planet.
+
+---
+
+## Phase 7: Planet Outcome Logic & Rendering System
+**Goal:** Implement the simulation engine that determines planet type based on inputs
+
+### Tasks:
+- Reference PLANET_CREATIONS.md file that contains the rules for planet classification
+- Implement simulation logic based on:
+  - Element composition (determines core, mantle, surface materials)
+  - Distance from star (temperature zones)
+  - Star type (radiation, energy output)
+  - Mass (gravity, atmosphere retention)
+  - Rotation (magnetic field, climate)
+- Build planet type classification system:
+  - Gas Giant (high H/He, high mass)
+  - Rocky/Terrestrial (high Si/Fe/Mg, moderate mass)
+  - Ice World (high H₂O, beyond frost line)
+  - Lava World (close to star, high volcanic activity)
+  - Water World (abundant H₂O, habitable zone)
+  - Venus-like (runaway greenhouse)
+  - Earth-like (balanced conditions for life)
+- Create texture/shader system for each planet type
+- Generate realistic planet surfaces based on classification
+
+### Deliverable:
+A working simulation engine that produces scientifically plausible planet outcomes with appropriate visual representations.
+
+---
+
+## Phase 8: Results Display & Planet Data
+**Goal:** Show detailed information about the created planet
+
+### Tasks:
+- Implement locked configuration view in right panel
+- Add results data display showing:
+  - Average temperature (calculated from star distance, atmosphere)
+  - Atmospheric composition (based on elements and outgassing)
+  - Final mass and diameter
+  - Geological activity type (rocky, gas giant, water, volcanic, ice)
+  - Life sustainability assessment
+- Create "Results" button that generates AI-powered planet summary
+- Integrate AI summary generation (using API or local model)
+- Style results panel with clear data visualization
+- Add comparison to real-world planet examples
+
+### Deliverable:
+A comprehensive results screen showing all calculated planet properties with AI-generated narrative summary.
+
+---
+
+## Phase 9: Planet Surface Rendering & Visual Polish
+**Goal:** Create realistic, detailed planet surfaces for all planet types
+
+### Tasks:
+- Implement realistic ocean rendering with reflections
+- Add ice cap materials with proper translucency
+- Create continental/crustal textures for rocky planets
+- Build dynamic cloud layer system with movement
+- Add lava/volcanic surface materials with glow effects
+- Implement atmospheric haze and glow effects
+- Add impact crater generation for appropriate planet types
+- Fine-tune lighting system with star color temperature
+- Optimize rendering performance
+
+### Deliverable:
+Visually stunning, scientifically accurate planet renderings for all possible outcomes.
+
+---
+
+## Phase 10: Educational Integration & Planet Examples
+**Goal:** Teach users real science using example planets from skills
+
+### Tasks:
+- Create planet comparison feature using skills examples (Earth, Venus, Jupiter, Ice World, Lava World, Water World)
+- Add tooltips explaining scientific concepts on configuration controls
+- Implement "Try This Recipe" feature to load example planet configurations
+- Add info cards explaining how element choices affect outcomes
+- Create educational mode with guided explanations
+- Link configuration choices to real planetary science
+- Add references to example planet markdown files in .claude/skills/
+
+### Deliverable:
+An educational experience that teaches planetary science through interactive examples and clear explanations.
+
+---
+
+## Phase 11: Polish, Performance & UX Refinement
+**Goal:** Optimize and refine the complete user experience
+
+### Tasks:
+- Add sound design (ambient space sounds, formation effects, UI interactions)
+- Implement loading states and progress indicators
+- Add error handling and validation for configuration inputs
+- Optimize Three.js performance (LOD, texture compression, culling)
+- Implement responsive design for different screen sizes
+- Add keyboard shortcuts for common actions
+- Create onboarding/tutorial overlay for first-time users
+- Polish animations and transitions throughout app
+- Add accessibility features (keyboard navigation, screen reader support)
+
+### Deliverable:
+A polished, performant application with excellent UX and accessibility.
+
+---
+
+## Phase 12: Advanced Features & Future Expansion
+**Goal:** Add depth and long-term engagement
+
+### Future Ideas:
+- Save/load planet configurations (local storage or database)
+- Planet gallery to share creations with community
+- Challenge mode with specific planet-building goals
+- "What if?" scenarios (e.g., "What if Earth had no moon?")
+- Multi-planet systems (add moons or companion planets)
+- Time-lapse replay showing formation in slow motion
+- Export planet data as JSON or image
+- Integration with real exoplanet data
+- VR mode for immersive planet exploration
+- Mobile app version
+
+---
+
+## Suggested Starting Point
+
+**Recommended First Sprint:** Phase 1-3
+
+Set up the project foundation, create the landing page, and get the 3D gas cloud rendering. This establishes the core technical stack (Next.js + Radix UI + Three.js) and provides immediate visual feedback to keep development engaging.
+
+**Key Principle:** Build vertically through the user flow. Each phase should add a working piece of the user journey from landing → configuration → formation → results. This ensures you always have a playable version of the app.
 
 
