@@ -8,7 +8,9 @@
       "Bash(git commit:*)",
       "Bash(npm run dev:*)",
       "Bash(curl:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

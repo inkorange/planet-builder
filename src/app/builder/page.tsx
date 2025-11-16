@@ -5,6 +5,7 @@ import { Flex, Box } from "@radix-ui/themes";
 import { PageLayout } from "@/components/layout";
 import { PlanetScene } from "@/components/builder/PlanetScene";
 import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
+import styles from "./page.module.scss";
 
 export default function BuilderPage() {
   const [mass, setMass] = useState(1);
@@ -12,9 +13,9 @@ export default function BuilderPage() {
 
   return (
     <PageLayout>
-      <Flex style={{ height: "calc(100vh - 64px)" }}>
-        {/* Left side - 3D Visualization (75%) */}
-        <Box style={{ flex: "0 0 75%", position: "relative" }}>
+      <Flex className={styles.container}>
+        {/* Left side - 3D Visualization (70%) */}
+        <Box className={styles.scenePanel}>
           <PlanetScene
             particleDensity={mass}
             luminosity={luminosity}
@@ -22,8 +23,8 @@ export default function BuilderPage() {
           />
         </Box>
 
-        {/* Right side - Configuration Panel (25%) */}
-        <Box style={{ flex: "0 0 25%" }}>
+        {/* Right side - Configuration Panel (30%) */}
+        <Box className={styles.configPanel}>
           <ConfigurationPanel
             onMassChange={setMass}
             onLuminosityChange={setLuminosity}

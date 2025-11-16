@@ -400,30 +400,35 @@ export function PrimordialGasCloud({
           count={maxParticleCount}
           array={positions}
           itemSize={3}
+          args={[positions, 3]}
         />
         <bufferAttribute
           attach="attributes-size"
           count={maxParticleCount}
           array={sizes}
           itemSize={1}
+          args={[sizes, 1]}
         />
         <bufferAttribute
           attach="attributes-opacity"
           count={maxParticleCount}
           array={opacities}
           itemSize={1}
+          args={[opacities, 1]}
         />
         <bufferAttribute
           attach="attributes-color"
           count={maxParticleCount}
           array={colors}
           itemSize={3}
+          args={[colors, 3]}
         />
         <bufferAttribute
           attach="attributes-trail"
           count={maxParticleCount}
           array={trails}
           itemSize={1}
+          args={[trails, 1]}
         />
       </bufferGeometry>
     </points>

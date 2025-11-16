@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { PrimordialGasCloud } from "./PrimordialGasCloud";
+import styles from "./PlanetScene.module.scss";
 
 interface PlanetSceneProps {
   particleDensity?: number;
@@ -17,13 +18,14 @@ export function PlanetScene({
   cloudColor = "#6096fa",
 }: PlanetSceneProps) {
   return (
-    <div style={{ width: "100%", height: "100%", background: "#000" }}>
+    <div className={styles.container}>
       <Canvas
         camera={{
           position: [0, 2, 8],
           fov: 50,
         }}
-        style={{ background: "#000000" }}
+        className={styles.canvas}
+        resize={{ scroll: false, debounce: 0 }}
       >
         {/* Ambient light based on star luminosity */}
         <ambientLight intensity={0.3 * luminosity} />

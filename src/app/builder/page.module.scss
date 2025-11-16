@@ -1,0 +1,20 @@
+.container {
+  height: calc(100vh - 64px);
+  width: 100%;
+  overflow: hidden;
+}
+
+.scenePanel {
+  flex: 1 1 70%;
+  min-width: 0;
+  position: relative;
+  height: 100%;
+}
+
+.configPanel {
+  flex: 0 0 30%;
+  min-width: 320px;
+  max-width: 450px;
+  height: 100%;
+  overflow: hidden;
+}

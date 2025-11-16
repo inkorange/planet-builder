@@ -1,6 +1,20 @@
 "use client";
 
-import { Box, Flex, Heading, Text, Slider, Button } from "@radix-ui/themes";
+import { useState } from "react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Text,
+  Slider,
+  Button,
+  RadioGroup,
+  ScrollArea,
+} from "@radix-ui/themes";
+import { ElementCard } from "./ElementCard";
+import { ElementCompositionBar } from "./ElementCompositionBar";
+import { ELEMENTS, STAR_TYPES } from "@/data/elements";
+import styles from "./ConfigurationPanel.module.scss";
 
 interface ConfigurationPanelProps {
   onMassChange?: (value: number) => void;
@@ -9,63 +23,149 @@ interface ConfigurationPanelProps {
 
 export function ConfigurationPanel({
   onMassChange,
-  onLuminosityChange,
 }: ConfigurationPanelProps) {
+  const [elementParts, setElementParts] = useState<Record<string, number>>(
+    ELEMENTS.reduce((acc, el) => ({ ...acc, [el.symbol]: 0 }), {})
+  );
+  const [distance, setDistance] = useState(1);
+  const [starType, setStarType] = useState("G");
+  const [mass, setMass] = useState(1);
+  const [rotation, setRotation] = useState(24);
+
+  const handleElementChange = (symbol: string, value: number) => {
+    setElementParts((prev) => ({ ...prev, [symbol]: value }));
+  };
+
+  const totalParts = Object.values(elementParts).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+
   return (
-    <Box
-      p="5"
-      style={{
-        height: "100%",
-        overflowY: "auto",
-        background: "var(--gray-a2)",
-        borderLeft: "1px solid var(--gray-a6)",
-      }}
-    >
-      <Flex direction="column" gap="6">
-        <Heading size="5">Planet Configuration</Heading>
+    <ScrollArea className={styles.scrollArea}>
+      <Box className={styles.content}>
+        <Flex direction="column" gap="6">
+          <Heading size="5">Planet Configuration</Heading>
 
-        <Flex direction="column" gap="3">
-          <Text size="2" weight="bold" color="gray">
-            Initial Mass
-          </Text>
-          <Text size="1" color="gray">
-            0.1x - 100x Earth mass (Default: 1x)
-          </Text>
-          <Slider
-            defaultValue={[1]}
-            min={0.1}
-            max={100}
-            step={0.1}
-            onValueChange={(values) => onMassChange?.(values[0])}
-          />
+          {/* Element Composition */}
+          <Flex direction="column" gap="3">
+            <Text size="2" weight="bold">
+              Element Composition
+            </Text>
+
+            {/* Bar Chart Visualization */}
+            <ElementCompositionBar elementParts={elementParts} />
+
+            {/* Element Cards Grid */}
+            <Box className={styles.elementGrid}>
+              {ELEMENTS.map((element) => (
+                <ElementCard
+                  key={element.symbol}
+                  element={element}
+                  parts={elementParts[element.symbol]}
+                  onPartsChange={(val) =>
+                    handleElementChange(element.symbol, val)
+                  }
+                />
+              ))}
+            </Box>
+          </Flex>
+
+          {/* Environmental Parameters */}
+          <Flex direction="column" gap="4">
+            <Text size="3" weight="bold">
+              Environmental Parameters
+            </Text>
+
+            {/* Distance from Star */}
+            <Flex direction="column" gap="2">
+              <Text size="2" weight="medium">
+                Distance from Star
+              </Text>
+              <Text size="1" color="gray">
+                {distance.toFixed(1)} AU
+              </Text>
+              <Slider
+                value={[distance]}
+                min={0.1}
+                max={10}
+                step={0.1}
+                onValueChange={(values) => setDistance(values[0])}
+              />
+            </Flex>
+
+            {/* Star Type */}
+            <Flex direction="column" gap="2">
+              <Text size="2" weight="medium">
+                Star Type
+              </Text>
+              <RadioGroup.Root value={starType} onValueChange={setStarType}>
+                <Flex direction="column" gap="1">
+                  {STAR_TYPES.map((star) => (
+                    <Flex key={star.type} asChild gap="2">
+                      <Text as="label" size="2">
+                        <RadioGroup.Item value={star.type} />
+                        {star.type} - {star.name}
+                      </Text>
+                    </Flex>
+                  ))}
+                </Flex>
+              </RadioGroup.Root>
+            </Flex>
+
+            {/* Initial Mass */}
+            <Flex direction="column" gap="2">
+              <Text size="2" weight="medium">
+                Initial Mass
+              </Text>
+              <Text size="1" color="gray">
+                {mass.toFixed(1)}x Earth mass
+              </Text>
+              <Slider
+                value={[mass]}
+                min={0.1}
+                max={100}
+                step={0.1}
+                onValueChange={(values) => {
+                  setMass(values[0]);
+                  onMassChange?.(values[0]);
+                }}
+              />
+            </Flex>
+
+            {/* Rotation Speed */}
+            <Flex direction="column" gap="2">
+              <Text size="2" weight="medium">
+                Rotation Speed
+              </Text>
+              <Text size="1" color="gray">
+                {rotation.toFixed(0)} hours/day
+              </Text>
+              <Slider
+                value={[rotation]}
+                min={1}
+                max={2400}
+                step={1}
+                onValueChange={(values) => setRotation(values[0])}
+              />
+            </Flex>
+          </Flex>
+
+          {/* Build Button */}
+          <Button size="3" disabled={totalParts === 0}>
+            {totalParts === 0
+              ? "Add elements to build planet"
+              : "Build Planet (Phase 6)"}
+          </Button>
+
+          {/* Timeframe */}
+          <Box className={styles.timeframe}>
+            <Text size="2" weight="bold" color="gray">
+              5 Billion Years Ago
+            </Text>
+          </Box>
         </Flex>
-
-        <Flex direction="column" gap="3">
-          <Text size="2" weight="bold" color="gray">
-            Star Luminosity
-          </Text>
-          <Text size="1" color="gray">
-            Distance & Type (Default: 1 AU, G-type)
-          </Text>
-          <Slider
-            defaultValue={[1]}
-            min={0.1}
-            max={2}
-            step={0.1}
-            onValueChange={(values) => onLuminosityChange?.(values[0])}
-          />
-        </Flex>
-
-        <Box mt="4">
-          <Text size="1" color="gray">
-            Element mixing and environmental controls coming in Phase 4-5
-          </Text>
-        </Box>
-
-        <Button size="3" disabled style={{ marginTop: "auto" }}>
-          Build Planet (Phase 6)
-        </Button>
-      </Flex>
-    </Box>
+      </Box>
+    </ScrollArea>
   );
 }
