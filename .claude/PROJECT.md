@@ -406,16 +406,40 @@ A fully functional configuration panel where users can adjust all planet paramet
 **Goal:** Connect configuration changes to real-time 3D animations
 
 ### Tasks:
-- Implement comet animation when element percentages increase (colored by element)
-- Add gas ejection animation when element percentages decrease
-- Update gas cloud color based on aggregate element composition
-- Adjust scene luminosity based on star type and distance
-- Modulate particle density based on mass slider
-- Create smooth transitions for all visual changes
-- Optimize performance for real-time updates
+- ✅ Update gas cloud color based on aggregate element composition
+- ✅ Adjust scene luminosity based on star type
+- ✅ Modulate particle density based on mass slider
+- ✅ Create smooth transitions for all visual changes
+- ✅ Update particle colors dynamically when composition changes
 
 ### Deliverable:
 A responsive 3D visualization that immediately reflects every configuration change with appropriate animations.
+
+---
+
+## Phase 5.3: Comet & Gas Ejection Animations
+**Goal:** Add dynamic particle effects when elements are added or removed
+
+### Tasks:
+- Implement comet animation when element parts increase (colored by element)
+  - Track element changes (detect increases in parts)
+  - Spawn temporary comet particles that fly toward the gas cloud
+  - Color comets based on the element being added
+  - Animate comets with trail effects as they merge into the cloud
+  - Handle multiple simultaneous comets if user adds multiple elements quickly
+- Add gas ejection animation when element parts decrease
+  - Detect decreases in element parts
+  - Spawn particles that fly outward from the cloud
+  - Color ejected particles based on the element being removed
+  - Create dispersal effect with particle fade-out
+  - Prevent performance issues with too many simultaneous ejections
+- Optimize performance for real-time particle effects
+  - Use object pooling for temporary particles
+  - Limit maximum number of active comet/ejection effects
+  - Clean up completed animations efficiently
+
+### Deliverable:
+Dynamic particle animations that visually represent elements being added (comets) or removed (gas ejections) from the planet composition.
 
 ---
 

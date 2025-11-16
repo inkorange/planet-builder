@@ -19,10 +19,14 @@ import styles from "./ConfigurationPanel.module.scss";
 interface ConfigurationPanelProps {
   onMassChange?: (value: number) => void;
   onLuminosityChange?: (value: number) => void;
+  onElementCompositionChange?: (parts: Record<string, number>) => void;
+  onStarTypeChange?: (starType: string) => void;
 }
 
 export function ConfigurationPanel({
   onMassChange,
+  onElementCompositionChange,
+  onStarTypeChange,
 }: ConfigurationPanelProps) {
   const [elementParts, setElementParts] = useState<Record<string, number>>(
     ELEMENTS.reduce((acc, el) => ({ ...acc, [el.symbol]: 0 }), {})
@@ -33,7 +37,14 @@ export function ConfigurationPanel({
   const [rotation, setRotation] = useState(24);
 
   const handleElementChange = (symbol: string, value: number) => {
-    setElementParts((prev) => ({ ...prev, [symbol]: value }));
+    const newParts = { ...elementParts, [symbol]: value };
+    setElementParts(newParts);
+    onElementCompositionChange?.(newParts);
+  };
+
+  const handleStarTypeChange = (newStarType: string) => {
+    setStarType(newStarType);
+    onStarTypeChange?.(newStarType);
   };
 
   const totalParts = Object.values(elementParts).reduce(
@@ -99,7 +110,7 @@ export function ConfigurationPanel({
               <Text size="2" weight="medium">
                 Star Type
               </Text>
-              <RadioGroup.Root value={starType} onValueChange={setStarType}>
+              <RadioGroup.Root value={starType} onValueChange={handleStarTypeChange}>
                 <Flex direction="column" gap="1">
                   {STAR_TYPES.map((star) => (
                     <Flex key={star.type} asChild gap="2">

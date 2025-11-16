@@ -4,18 +4,25 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { PrimordialGasCloud } from "./PrimordialGasCloud";
+import { ElementParticleEffects } from "./ElementParticleEffects";
 import styles from "./PlanetScene.module.scss";
 
 interface PlanetSceneProps {
   particleDensity?: number;
   luminosity?: number;
   cloudColor?: string;
+  elementChanges?: Array<{
+    symbol: string;
+    color: string;
+    change: number;
+  }>;
 }
 
 export function PlanetScene({
   particleDensity = 1,
   luminosity = 1,
   cloudColor = "#6096fa",
+  elementChanges = [],
 }: PlanetSceneProps) {
   return (
     <div className={styles.container}>
@@ -45,6 +52,9 @@ export function PlanetScene({
           luminosity={luminosity}
           cloudColor={cloudColor}
         />
+
+        {/* Element particle effects (comets and ejections) */}
+        <ElementParticleEffects elementChanges={elementChanges} />
 
         {/* Camera controls - rotation only, no zoom */}
         <OrbitControls
