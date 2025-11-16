@@ -196,9 +196,39 @@ export function PrimordialGasCloud({
     }
   }, [activeParticleCount]);
 
+  // Update particle colors when cloudColor changes
+  useEffect(() => {
+    if (!particlesRef.current) return;
+
+    const colorAttribute = particlesRef.current.geometry.attributes.color;
+    if (!colorAttribute) return;
+
+    const targetRGB = new THREE.Color(cloudColor);
+    const colorArray = colorAttribute.array as Float32Array;
+
+    // Update all particle colors with variation around the target color
+    for (let i = 0; i < maxParticleCount; i++) {
+      const i3 = i * 3;
+
+      // Add variation to create depth (±20% variation)
+      const variation = 0.8 + Math.random() * 0.4;
+
+      colorArray[i3] = targetRGB.r * variation;
+      colorArray[i3 + 1] = targetRGB.g * variation;
+      colorArray[i3 + 2] = targetRGB.b * variation;
+    }
+
+    colorAttribute.needsUpdate = true;
+  }, [cloudColor, maxParticleCount]);
+
   // Animate the swirling particles
   useFrame((state, delta) => {
     if (!particlesRef.current) return;
+
+    // Smooth transitions for color and luminosity
+    const lerpFactor = 1 - Math.pow(0.01, delta); // Smooth exponential ease
+    shaderMaterial.uniforms.color.value.lerp(targetColor.current, lerpFactor);
+    shaderMaterial.uniforms.luminosity.value += (targetLuminosity.current - shaderMaterial.uniforms.luminosity.value) * lerpFactor;
 
     const positions = particlesRef.current.geometry.attributes.position
       .array as Float32Array;
@@ -386,11 +416,15 @@ export function PrimordialGasCloud({
     });
   }, [color, spriteTexture, luminosity]);
 
-  // Update material uniforms when props change
+  // Smooth transition targets
+  const targetColor = useRef(new THREE.Color(cloudColor));
+  const targetLuminosity = useRef(luminosity);
+
+  // Update target values when props change
   useEffect(() => {
-    shaderMaterial.uniforms.color.value = new THREE.Color(cloudColor);
-    shaderMaterial.uniforms.luminosity.value = luminosity;
-  }, [cloudColor, luminosity, shaderMaterial]);
+    targetColor.current = new THREE.Color(cloudColor);
+    targetLuminosity.current = luminosity;
+  }, [cloudColor, luminosity]);
 
   return (
     <points ref={particlesRef} material={shaderMaterial}>
@@ -400,30 +434,35 @@ export function PrimordialGasCloud({
           count={maxParticleCount}
           array={positions}
           itemSize={3}
+          args={[positions, 3]}
         />
         <bufferAttribute
           attach="attributes-size"
           count={maxParticleCount}
           array={sizes}
           itemSize={1}
+          args={[sizes, 1]}
         />
         <bufferAttribute
           attach="attributes-opacity"
           count={maxParticleCount}
           array={opacities}
           itemSize={1}
+          args={[opacities, 1]}
         />
         <bufferAttribute
           attach="attributes-color"
           count={maxParticleCount}
           array={colors}
           itemSize={3}
+          args={[colors, 3]}
         />
         <bufferAttribute
           attach="attributes-trail"
           count={maxParticleCount}
           array={trails}
           itemSize={1}
+          args={[trails, 1]}
         />
       </bufferGeometry>
     </points>

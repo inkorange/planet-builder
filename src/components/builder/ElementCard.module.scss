@@ -1,0 +1,23 @@
+.card {
+  padding: var(--space-2);
+  border-radius: 8px;
+}
+
+.symbol {
+  font-size: var(--font-size-3);
+  font-weight: bold;
+}
+
+.parts {
+  font-size: var(--font-size-1);
+  font-weight: bold;
+}
+
+.name {
+  font-size: var(--font-size-1);
+  color: var(--gray-11);
+}
+
+.controls {
+  margin-top: var(--space-1);
+}

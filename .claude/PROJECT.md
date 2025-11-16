@@ -393,20 +393,53 @@ A fully functional configuration panel where users can adjust all planet paramet
 
 ---
 
+## Phase 5.2: Element Selector Cleanup
+**Goal:** Rework the percentage calculation for adding/removing element units
+
+### Tasks:
+- The elements should not be incremented and decremented by percentages, they should be standard units, +1, or -1 parts of the entire composition.
+- An exmaple element composition would be: User adds 3 parts Oxygen, 5 parts Helium, 2 parts Nitrogen, the parts would equal 10, and the planets composition would then be 30% Oxygen, 50% Helium, and 20% Nitrogen
+- The visualization of the elements should be a bar shart that sits above the element selector cards. The bar chart is the % of each element, colored based oh the element card color we defined, with a label in the bar. The bar is always 100%, based on the previous explanation of how element composition is calculated by user input.
+- When no elements have been added, inside the bar chart, it will not have any filled regions, and read: "Add elements below to your planet."
+
 ## Phase 5: Interactive Visual Feedback System
 **Goal:** Connect configuration changes to real-time 3D animations
 
 ### Tasks:
-- Implement comet animation when element percentages increase (colored by element)
-- Add gas ejection animation when element percentages decrease
-- Update gas cloud color based on aggregate element composition
-- Adjust scene luminosity based on star type and distance
-- Modulate particle density based on mass slider
-- Create smooth transitions for all visual changes
-- Optimize performance for real-time updates
+- ✅ Update gas cloud color based on aggregate element composition
+- ✅ Adjust scene luminosity based on star type
+- ✅ Modulate particle density based on mass slider
+- ✅ Create smooth transitions for all visual changes
+- ✅ Update particle colors dynamically when composition changes
 
 ### Deliverable:
 A responsive 3D visualization that immediately reflects every configuration change with appropriate animations.
+
+---
+
+## Phase 5.3: Comet & Gas Ejection Animations
+**Goal:** Add dynamic particle effects when elements are added or removed
+
+### Tasks:
+- Implement comet animation when element parts increase (colored by element)
+  - Track element changes (detect increases in parts)
+  - Spawn temporary comet particles that fly toward the gas cloud
+  - Color comets based on the element being added
+  - Animate comets with trail effects as they merge into the cloud
+  - Handle multiple simultaneous comets if user adds multiple elements quickly
+- Add gas ejection animation when element parts decrease
+  - Detect decreases in element parts
+  - Spawn particles that fly outward from the cloud
+  - Color ejected particles based on the element being removed
+  - Create dispersal effect with particle fade-out
+  - Prevent performance issues with too many simultaneous ejections
+- Optimize performance for real-time particle effects
+  - Use object pooling for temporary particles
+  - Limit maximum number of active comet/ejection effects
+  - Clean up completed animations efficiently
+
+### Deliverable:
+Dynamic particle animations that visually represent elements being added (comets) or removed (gas ejections) from the planet composition.
 
 ---
 
