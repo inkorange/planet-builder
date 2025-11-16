@@ -8,15 +8,18 @@ interface PrimordialGasCloudProps {
   particleDensity?: number; // 0.1 to 100 (Earth masses)
   luminosity?: number; // 0.1 to 2 (based on star proximity/type)
   cloudColor?: string; // Hex color based on element composition
+  isBuilding?: boolean; // Whether the planet is currently being formed
 }
 
 export function PrimordialGasCloud({
   particleDensity = 1,
   luminosity = 1,
   cloudColor = "#6096fa",
+  isBuilding = false,
 }: PrimordialGasCloudProps) {
   const particlesRef = useRef<THREE.Points>(null);
   const rotationSpeed = useRef(0.001);
+  const buildStartTime = useRef<number | null>(null);
 
   // Use a fixed maximum particle count to avoid buffer resizing issues
   const maxParticleCount = 54000; // Increased by 25% from 43200
@@ -221,6 +224,15 @@ export function PrimordialGasCloud({
     colorAttribute.needsUpdate = true;
   }, [cloudColor, maxParticleCount]);
 
+  // Track when building starts
+  useEffect(() => {
+    if (isBuilding && !buildStartTime.current) {
+      buildStartTime.current = Date.now();
+    } else if (!isBuilding) {
+      buildStartTime.current = null;
+    }
+  }, [isBuilding]);
+
   // Animate the swirling particles
   useFrame((state, delta) => {
     if (!particlesRef.current) return;
@@ -232,6 +244,14 @@ export function PrimordialGasCloud({
 
     const positions = particlesRef.current.geometry.attributes.position
       .array as Float32Array;
+
+    // Calculate build animation progress (0 to 1 over full 4 seconds)
+    // Gas continues collapsing even as flash starts at 2s
+    let buildProgress = 0;
+    if (isBuilding && buildStartTime.current) {
+      const elapsed = Date.now() - buildStartTime.current;
+      buildProgress = Math.min(elapsed / 4000, 1); // 0 to 1 over full 4 seconds
+    }
 
     // Only animate active particles
     for (let i = 0; i < activeParticleCount; i++) {
@@ -247,11 +267,23 @@ export function PrimordialGasCloud({
       const phi = Math.atan2(y, Math.sqrt(x * x + z * z));
 
       // Rotation speed varies with distance (differential rotation like a real nebula)
-      const rotationRate = velocities[i3] / Math.max(distance, 0.5);
+      let rotationRate = velocities[i3] / Math.max(distance, 0.5);
+
+      // During build phase, accelerate rotation based on progress
+      if (buildProgress > 0) {
+        const accelerationFactor = 1 + buildProgress * buildProgress * 25; // Increased from 15 to 25 for 5x faster swirl
+        rotationRate *= accelerationFactor;
+      }
+
       const newTheta = theta + rotationRate;
 
-      // Keep radius stable - no fluctuation for cleaner rotation
-      const radius = distance;
+      // During build phase, pull particles toward center
+      let radius = distance;
+      if (buildProgress > 0) {
+        // Accelerating collapse toward center
+        const collapseSpeed = buildProgress * buildProgress * 0.15; // Quadratic acceleration
+        radius = Math.max(0.2, distance * (1 - collapseSpeed));
+      }
 
       // Apply minimal turbulence - focus on rotation instead of outward emission
       const turbulenceScale = 0.15; // Very minimal turbulence for smoother rotation
@@ -383,16 +415,23 @@ export function PrimordialGasCloud({
           // Particles behind center (from light's perspective) get darkened
           // Also consider depth - particles deeper in the cloud cast more shadow
           float depthDarkening = smoothstep(0.0, 1.0, distanceFromCenter * 0.5);
-          float shadowDarkening = smoothstep(-1.0, 0.3, shadowFactor);
+          float shadowDarkening = smoothstep(-1.0, 0.5, shadowFactor); // Increased from 0.3 to 0.5 to reduce darkening
           shadowDarkening = mix(shadowDarkening, 1.0, depthDarkening * 0.5);
 
+          // Prevent excessive darkening at center - particles very close to light should stay bright
+          float centerProtection = 1.0 - smoothstep(0.0, 0.5, distanceFromCenter); // 1 at center, 0 beyond 0.5
+          shadowDarkening = mix(shadowDarkening, 1.0, centerProtection * 0.9); // Strong blend toward full brightness at center
+
           // Much higher ambient light to ensure backside is visible
-          float ambientLight = 1.0125; // Reduced by 25% from 1.35
+          float ambientLight = 1.5; // Increased significantly to prevent black hole
 
           // Directional lighting adds on top of ambient
           float directionalLight = (mix(0.3, 1.5, lightIntensity) + edgeBoost) * shadowDarkening;
 
           float lighting = ambientLight + directionalLight;
+
+          // Clamp minimum lighting to prevent complete blackness
+          lighting = max(lighting, 0.8);
 
           // Use per-particle color with lighting
           // Reduced luminosity influence by 50% from 0.4 to 0.2 to prevent burnout
@@ -401,6 +440,10 @@ export function PrimordialGasCloud({
           // Boost brightness for fast-moving particles to create bloom trails
           float trailBrightness = 1.0 + vTrail * 0.075; // Increased by 50% from 0.05
           dustColor *= trailBrightness;
+
+          // PREVENT BLACK HOLE: Clamp color to prevent oversaturation with additive blending
+          // When particles overlap at center with additive blending, colors can exceed 1.0 and wrap to black
+          dustColor = clamp(dustColor, vec3(0.0), vec3(1.0));
 
           // Boost for edge particles - reduced to prevent burnout
           float alphaBoost = 1.0 + edgeBoost * 0.5; // Further reduced from 1.0 to 0.5

@@ -11,6 +11,21 @@
   height: 100%;
 }
 
+.timeline {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  z-index: 10;
+  pointer-events: none;
+}
+
 .configPanel {
   flex: 0 0 30%;
   min-width: 320px;

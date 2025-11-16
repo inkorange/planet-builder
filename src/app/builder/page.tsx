@@ -18,6 +18,9 @@ export default function BuilderPage() {
     color: string;
     change: number;
   }>>([]);
+  const [isBuilding, setIsBuilding] = useState(false);
+  const [isBuilt, setIsBuilt] = useState(false);
+  const [yearsAgo, setYearsAgo] = useState(5000000000); // 5 billion years
 
   const previousElementParts = useRef<Record<string, number>>({});
 
@@ -59,6 +62,36 @@ export default function BuilderPage() {
     setLuminosity(newLuminosity);
   };
 
+  const handleBuild = () => {
+    setIsBuilding(true);
+    setIsBuilt(false);
+
+    // Start the 4-second formation animation
+    // Timeline countdown from 5B years to present
+    const startTime = Date.now();
+    const duration = 4000; // 4 seconds
+    const startYears = 5000000000;
+
+    const countdownInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentYears = Math.round(startYears * (1 - progress));
+      setYearsAgo(currentYears);
+
+      if (progress >= 1) {
+        clearInterval(countdownInterval);
+        setIsBuilding(false);
+        setIsBuilt(true);
+        setYearsAgo(0);
+      }
+    }, 16); // Update ~60fps
+  };
+
+  const handleFormationComplete = () => {
+    setIsBuilding(false);
+    setIsBuilt(true);
+  };
+
   return (
     <PageLayout>
       <Flex className={styles.container}>
@@ -69,7 +102,19 @@ export default function BuilderPage() {
             luminosity={luminosity}
             cloudColor={cloudColor}
             elementChanges={elementChanges}
+            isBuilding={isBuilding}
+            isBuilt={isBuilt}
+            onFormationComplete={handleFormationComplete}
           />
+
+          {/* Timeline display at bottom */}
+          <Box className={styles.timeline}>
+            {yearsAgo > 0 ? (
+              <span>{(yearsAgo / 1000000000).toFixed(2)} Billion Years Ago</span>
+            ) : (
+              <span>Present Day</span>
+            )}
+          </Box>
         </Box>
 
         {/* Right side - Configuration Panel (30%) */}
@@ -78,6 +123,8 @@ export default function BuilderPage() {
             onMassChange={setMass}
             onElementCompositionChange={handleElementCompositionChange}
             onStarTypeChange={handleStarTypeChange}
+            onBuild={handleBuild}
+            isLocked={isBuilding || isBuilt}
           />
         </Box>
       </Flex>

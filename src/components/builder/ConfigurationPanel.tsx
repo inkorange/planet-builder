@@ -21,12 +21,16 @@ interface ConfigurationPanelProps {
   onLuminosityChange?: (value: number) => void;
   onElementCompositionChange?: (parts: Record<string, number>) => void;
   onStarTypeChange?: (starType: string) => void;
+  onBuild?: () => void;
+  isLocked?: boolean;
 }
 
 export function ConfigurationPanel({
   onMassChange,
   onElementCompositionChange,
   onStarTypeChange,
+  onBuild,
+  isLocked = false,
 }: ConfigurationPanelProps) {
   const [elementParts, setElementParts] = useState<Record<string, number>>(
     ELEMENTS.reduce((acc, el) => ({ ...acc, [el.symbol]: 0 }), {})
@@ -64,9 +68,6 @@ export function ConfigurationPanel({
               Element Composition
             </Text>
 
-            {/* Bar Chart Visualization */}
-            <ElementCompositionBar elementParts={elementParts} />
-
             {/* Element Cards Grid */}
             <Box className={styles.elementGrid}>
               {ELEMENTS.map((element) => (
@@ -77,9 +78,13 @@ export function ConfigurationPanel({
                   onPartsChange={(val) =>
                     handleElementChange(element.symbol, val)
                   }
+                  disabled={isLocked}
                 />
               ))}
             </Box>
+
+            {/* Bar Chart Visualization - Below cards to prevent layout shift */}
+            <ElementCompositionBar elementParts={elementParts} />
           </Flex>
 
           {/* Environmental Parameters */}
@@ -102,6 +107,7 @@ export function ConfigurationPanel({
                 max={10}
                 step={0.1}
                 onValueChange={(values) => setDistance(values[0])}
+                disabled={isLocked}
               />
             </Flex>
 
@@ -110,12 +116,12 @@ export function ConfigurationPanel({
               <Text size="2" weight="medium">
                 Star Type
               </Text>
-              <RadioGroup.Root value={starType} onValueChange={handleStarTypeChange}>
+              <RadioGroup.Root value={starType} onValueChange={handleStarTypeChange} disabled={isLocked}>
                 <Flex direction="column" gap="1">
                   {STAR_TYPES.map((star) => (
                     <Flex key={star.type} asChild gap="2">
                       <Text as="label" size="2">
-                        <RadioGroup.Item value={star.type} />
+                        <RadioGroup.Item value={star.type} disabled={isLocked} />
                         {star.type} - {star.name}
                       </Text>
                     </Flex>
@@ -141,6 +147,7 @@ export function ConfigurationPanel({
                   setMass(values[0]);
                   onMassChange?.(values[0]);
                 }}
+                disabled={isLocked}
               />
             </Flex>
 
@@ -158,23 +165,19 @@ export function ConfigurationPanel({
                 max={2400}
                 step={1}
                 onValueChange={(values) => setRotation(values[0])}
+                disabled={isLocked}
               />
             </Flex>
           </Flex>
 
           {/* Build Button */}
-          <Button size="3" disabled={totalParts === 0}>
+          <Button size="3" disabled={totalParts === 0 || isLocked} onClick={onBuild}>
             {totalParts === 0
               ? "Add elements to build planet"
-              : "Build Planet (Phase 6)"}
+              : isLocked
+              ? "Planet Built"
+              : "Build Planet"}
           </Button>
-
-          {/* Timeframe */}
-          <Box className={styles.timeframe}>
-            <Text size="2" weight="bold" color="gray">
-              5 Billion Years Ago
-            </Text>
-          </Box>
         </Flex>
       </Box>
     </ScrollArea>
