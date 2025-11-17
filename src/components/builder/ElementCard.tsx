@@ -9,12 +9,14 @@ interface ElementCardProps {
   element: Element;
   parts: number;
   onPartsChange: (value: number) => void;
+  disabled?: boolean;
 }
 
 export function ElementCard({
   element,
   parts,
   onPartsChange,
+  disabled = false,
 }: ElementCardProps) {
   const handleIncrease = () => {
     onPartsChange(parts + 1);
@@ -51,7 +53,7 @@ export function ElementCard({
             size="1"
             variant="soft"
             onClick={handleDecrease}
-            disabled={parts === 0}
+            disabled={parts === 0 || disabled}
           >
             <MinusIcon />
           </IconButton>
@@ -59,6 +61,7 @@ export function ElementCard({
             size="1"
             variant="soft"
             onClick={handleIncrease}
+            disabled={disabled}
           >
             <PlusIcon />
           </IconButton>

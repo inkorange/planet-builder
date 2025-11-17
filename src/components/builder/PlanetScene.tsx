@@ -5,6 +5,7 @@ import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { PrimordialGasCloud } from "./PrimordialGasCloud";
 import { ElementParticleEffects } from "./ElementParticleEffects";
+import { PlanetFormationAnimation } from "./PlanetFormationAnimation";
 import styles from "./PlanetScene.module.scss";
 
 interface PlanetSceneProps {
@@ -16,6 +17,9 @@ interface PlanetSceneProps {
     color: string;
     change: number;
   }>;
+  isBuilding?: boolean;
+  isBuilt?: boolean;
+  onFormationComplete?: () => void;
 }
 
 export function PlanetScene({
@@ -23,6 +27,9 @@ export function PlanetScene({
   luminosity = 1,
   cloudColor = "#6096fa",
   elementChanges = [],
+  isBuilding = false,
+  isBuilt = false,
+  onFormationComplete,
 }: PlanetSceneProps) {
   return (
     <div className={styles.container}>
@@ -51,10 +58,23 @@ export function PlanetScene({
           particleDensity={particleDensity}
           luminosity={luminosity}
           cloudColor={cloudColor}
+          isBuilding={isBuilding}
         />
 
         {/* Element particle effects (comets and ejections) */}
-        <ElementParticleEffects elementChanges={elementChanges} />
+        {!isBuilding && !isBuilt && (
+          <ElementParticleEffects elementChanges={elementChanges} />
+        )}
+
+        {/* Formation animation */}
+        {isBuilding && onFormationComplete && (
+          <PlanetFormationAnimation
+            isActive={isBuilding}
+            onComplete={onFormationComplete}
+            cloudColor={cloudColor}
+            particleDensity={particleDensity}
+          />
+        )}
 
         {/* Camera controls - rotation only, no zoom */}
         <OrbitControls
