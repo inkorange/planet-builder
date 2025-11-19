@@ -1,0 +1,13 @@
+.container {
+  position: absolute;
+  bottom: 60px;
+  left: 20px;
+  right: 20px;
+  background: var(--color-panel);
+  border: 1px solid var(--gray-6);
+  border-radius: 8px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10;
+}

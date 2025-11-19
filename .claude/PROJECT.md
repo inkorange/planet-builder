@@ -498,6 +498,7 @@ A working simulation engine that produces scientifically plausible planet outcom
   - Final mass and diameter
   - Geological activity type (rocky, gas giant, water, volcanic, ice)
   - Life sustainability assessment
+  - The results panel should inherit the right side panel, with a full summary of the settings, leaving the rendered planet in full view.
 - Create "Results" button that generates AI-powered planet summary
 - Integrate AI summary generation (using API or local model)
 - Style results panel with clear data visualization
@@ -514,7 +515,7 @@ A comprehensive results screen showing all calculated planet properties with AI-
 ### Tasks:
 - Implement realistic ocean rendering with reflections
 - Add ice cap materials with proper translucency
-- Create continental/crustal textures for rocky planets
+- Create continental/crustal textures for rocky planets, using fractle calculations to simulate terrain, so that if the planet has an ocean, it will site below the mountains.
 - Build dynamic cloud layer system with movement
 - Add lava/volcanic surface materials with glow effects
 - Implement atmospheric haze and glow effects

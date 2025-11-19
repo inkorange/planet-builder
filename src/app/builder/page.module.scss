@@ -26,6 +26,22 @@
   pointer-events: none;
 }
 
+.restartButton {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 10;
+
+  button {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
 .configPanel {
   flex: 0 0 30%;
   min-width: 320px;

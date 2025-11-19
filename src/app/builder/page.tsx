@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Flex, Box } from "@radix-ui/themes";
+import { Flex, Box, Button } from "@radix-ui/themes";
 import { PageLayout } from "@/components/layout";
 import { PlanetScene } from "@/components/builder/PlanetScene";
 import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
+import { ResultsPanel } from "@/components/builder/ResultsPanel";
 import { calculateCloudColor, calculateLuminosity } from "@/utils/planetCalculations";
+import { classifyPlanet, type PlanetClassification } from "@/utils/planetSimulation";
 import { ELEMENTS } from "@/data/elements";
 import styles from "./page.module.scss";
 
@@ -22,17 +24,25 @@ export default function BuilderPage() {
   const [isBuilt, setIsBuilt] = useState(false);
   const [yearsAgo, setYearsAgo] = useState(5000000000); // 5 billion years
 
+  // Planet configuration parameters
+  const [elementParts, setElementParts] = useState<Record<string, number>>({});
+  const [distance, setDistance] = useState(1);
+  const [starType, setStarType] = useState("G");
+  const [rotationSpeed, setRotationSpeed] = useState(24);
+  const [planetClassification, setPlanetClassification] = useState<PlanetClassification | null>(null);
+
   const previousElementParts = useRef<Record<string, number>>({});
 
-  const handleElementCompositionChange = (elementParts: Record<string, number>) => {
-    const newColor = calculateCloudColor(elementParts);
+  const handleElementCompositionChange = (newElementParts: Record<string, number>) => {
+    setElementParts(newElementParts);
+    const newColor = calculateCloudColor(newElementParts);
     setCloudColor(newColor);
 
     // Detect changes in element composition
     const changes: Array<{ symbol: string; color: string; change: number }> = [];
 
-    Object.keys(elementParts).forEach((symbol) => {
-      const currentParts = elementParts[symbol] || 0;
+    Object.keys(newElementParts).forEach((symbol) => {
+      const currentParts = newElementParts[symbol] || 0;
       const previousParts = previousElementParts.current[symbol] || 0;
       const change = currentParts - previousParts;
 
@@ -54,11 +64,12 @@ export default function BuilderPage() {
       setTimeout(() => setElementChanges([]), 16);
     }
 
-    previousElementParts.current = { ...elementParts };
+    previousElementParts.current = { ...newElementParts };
   };
 
-  const handleStarTypeChange = (starType: string) => {
-    const newLuminosity = calculateLuminosity(starType);
+  const handleStarTypeChange = (newStarType: string) => {
+    setStarType(newStarType);
+    const newLuminosity = calculateLuminosity(newStarType);
     setLuminosity(newLuminosity);
   };
 
@@ -80,8 +91,6 @@ export default function BuilderPage() {
 
       if (progress >= 1) {
         clearInterval(countdownInterval);
-        setIsBuilding(false);
-        setIsBuilt(true);
         setYearsAgo(0);
       }
     }, 16); // Update ~60fps
@@ -90,6 +99,25 @@ export default function BuilderPage() {
   const handleFormationComplete = () => {
     setIsBuilding(false);
     setIsBuilt(true);
+
+    // Calculate planet classification based on configuration
+    const classification = classifyPlanet({
+      elementParts,
+      distanceFromStar: distance,
+      starType,
+      mass,
+      rotationSpeed,
+    });
+
+    setPlanetClassification(classification);
+  };
+
+  const handleRestart = () => {
+    // Reset all state to initial values
+    setIsBuilt(false);
+    setIsBuilding(false);
+    setPlanetClassification(null);
+    setYearsAgo(5000000000);
   };
 
   return (
@@ -101,10 +129,12 @@ export default function BuilderPage() {
             particleDensity={mass}
             luminosity={luminosity}
             cloudColor={cloudColor}
+            starType={starType}
             elementChanges={elementChanges}
             isBuilding={isBuilding}
             isBuilt={isBuilt}
             onFormationComplete={handleFormationComplete}
+            planetClassification={planetClassification}
           />
 
           {/* Timeline display at bottom */}
@@ -115,17 +145,41 @@ export default function BuilderPage() {
               <span>Present Day</span>
             )}
           </Box>
+
+          {/* Restart button - bottom left */}
+          {isBuilt && (
+            <Box className={styles.restartButton}>
+              <Button size="3" onClick={handleRestart} variant="solid">
+                Start Over
+              </Button>
+            </Box>
+          )}
         </Box>
 
-        {/* Right side - Configuration Panel (30%) */}
+        {/* Right side - Configuration Panel (30%) or Results Panel after build */}
         <Box className={styles.configPanel}>
-          <ConfigurationPanel
-            onMassChange={setMass}
-            onElementCompositionChange={handleElementCompositionChange}
-            onStarTypeChange={handleStarTypeChange}
-            onBuild={handleBuild}
-            isLocked={isBuilding || isBuilt}
-          />
+          {!isBuilt ? (
+            <ConfigurationPanel
+              onMassChange={setMass}
+              onElementCompositionChange={handleElementCompositionChange}
+              onStarTypeChange={handleStarTypeChange}
+              onDistanceChange={setDistance}
+              onRotationChange={setRotationSpeed}
+              onBuild={handleBuild}
+              isLocked={isBuilding || isBuilt}
+            />
+          ) : (
+            planetClassification && (
+              <ResultsPanel
+                classification={planetClassification}
+                elementParts={elementParts}
+                distance={distance}
+                starType={starType}
+                mass={mass}
+                rotationSpeed={rotationSpeed}
+              />
+            )
+          )}
         </Box>
       </Flex>
     </PageLayout>
