@@ -86,17 +86,17 @@ export function WaterWorldMaterial({ color }: { color: string }) {
 
       finalColor *= diffuse;
 
-      // Specular highlights on water
+      // Very subtle specular highlights on water (realistic ocean)
       if (islandMask < 0.5) {
         vec3 viewDir = normalize(vPosition);
         vec3 reflectDir = reflect(-lightDir, vNormal);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-        finalColor += vec3(spec * 0.5);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
+        finalColor += vec3(spec * 0.05);
       }
 
-      // Atmospheric glow
+      // Subtle atmospheric glow
       float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
-      finalColor = mix(finalColor, vec3(0.4, 0.6, 1.0), fresnel * 0.15);
+      finalColor = mix(finalColor, vec3(0.4, 0.6, 1.0), fresnel * 0.08);
 
       gl_FragColor = vec4(finalColor, 1.0);
     }
