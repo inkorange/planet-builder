@@ -29,13 +29,12 @@ export function calculateCloudColor(elementParts: Record<string, number>): strin
 }
 
 /**
- * Calculate luminosity based on star type
+ * Calculate luminosity based on star type and distance
+ * Uses inverse square law: intensity decreases with square of distance
  */
-export function calculateLuminosity(starType: string): number {
-  const starData = STAR_TYPES.find(s => s.type === starType);
-
-  // Luminosity mapping based on star class
-  const luminosityMap: Record<string, number> = {
+export function calculateLuminosity(starType: string, distance: number = 1.0): number {
+  // Base stellar luminosity by star class
+  const baseLuminosityMap: Record<string, number> = {
     O: 5.0,   // Blue supergiant - extremely bright
     B: 3.0,   // Blue giant - very bright
     A: 2.0,   // Blue-white - bright
@@ -45,7 +44,13 @@ export function calculateLuminosity(starType: string): number {
     M: 0.4,   // Red dwarf - very dim
   };
 
-  return luminosityMap[starType] || 1.0;
+  const baseLuminosity = baseLuminosityMap[starType] || 1.0;
+
+  // Apply inverse square law: L_observed = L_star / (distance^2)
+  // Clamp to reasonable range (0.1 to 10)
+  const observedLuminosity = baseLuminosity / (distance * distance);
+
+  return Math.max(0.1, Math.min(10, observedLuminosity));
 }
 
 /**

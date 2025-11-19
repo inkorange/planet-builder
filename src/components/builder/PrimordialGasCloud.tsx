@@ -422,33 +422,36 @@ export function PrimordialGasCloud({
           float centerProtection = 1.0 - smoothstep(0.0, 0.5, distanceFromCenter); // 1 at center, 0 beyond 0.5
           shadowDarkening = mix(shadowDarkening, 1.0, centerProtection * 0.9); // Strong blend toward full brightness at center
 
-          // Much higher ambient light to ensure backside is visible
-          float ambientLight = 1.5; // Increased significantly to prevent black hole
+          // Much higher ambient light for better visibility
+          float ambientLight = 5.0; // Very bright ambient
 
           // Directional lighting adds on top of ambient
-          float directionalLight = (mix(0.3, 1.5, lightIntensity) + edgeBoost) * shadowDarkening;
+          float directionalLight = (mix(1.0, 3.0, lightIntensity) + edgeBoost) * shadowDarkening;
 
           float lighting = ambientLight + directionalLight;
 
           // Clamp minimum lighting to prevent complete blackness
-          lighting = max(lighting, 0.8);
+          lighting = max(lighting, 3.5);
 
           // Use per-particle color with lighting
-          // Reduced luminosity influence by 50% from 0.4 to 0.2 to prevent burnout
-          vec3 dustColor = vColor * lighting * (0.8 + luminosity * 0.2);
+          // Very high luminosity multiplier for maximum visibility
+          vec3 dustColor = vColor * lighting * (2.0 + luminosity * 0.5);
 
           // Boost brightness for fast-moving particles to create bloom trails
-          float trailBrightness = 1.0 + vTrail * 0.075; // Increased by 50% from 0.05
+          float trailBrightness = 1.0 + vTrail * 0.1;
           dustColor *= trailBrightness;
+
+          // Overall brightness multiplier for the entire cloud
+          dustColor *= 4.0; // Extremely bright
 
           // PREVENT BLACK HOLE: Clamp color to prevent oversaturation with additive blending
           // When particles overlap at center with additive blending, colors can exceed 1.0 and wrap to black
-          dustColor = clamp(dustColor, vec3(0.0), vec3(1.0));
+          dustColor = clamp(dustColor, vec3(0.0), vec3(2.0)); // Allow very bright values
 
-          // Boost for edge particles - reduced to prevent burnout
-          float alphaBoost = 1.0 + edgeBoost * 0.5; // Further reduced from 1.0 to 0.5
-          // Further reduced alpha to prevent burnout
-          float finalAlpha = textureColor.a * vOpacity * luminosity * 0.08 * finalBlur * alphaBoost;
+          // Boost for edge particles
+          float alphaBoost = 1.0 + edgeBoost * 0.7;
+          // Much higher alpha for maximum visibility
+          float finalAlpha = textureColor.a * vOpacity * luminosity * 0.25 * finalBlur * alphaBoost;
 
           gl_FragColor = vec4(dustColor, finalAlpha);
         }
