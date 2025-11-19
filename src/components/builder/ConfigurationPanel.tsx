@@ -14,6 +14,7 @@ import {
 import { ElementCard } from "./ElementCard";
 import { ElementCompositionBar } from "./ElementCompositionBar";
 import { ELEMENTS, STAR_TYPES } from "@/data/elements";
+import { PLANET_PRESETS, type PlanetPreset } from "@/data/planetPresets";
 import styles from "./ConfigurationPanel.module.scss";
 
 interface ConfigurationPanelProps {
@@ -21,6 +22,8 @@ interface ConfigurationPanelProps {
   onLuminosityChange?: (value: number) => void;
   onElementCompositionChange?: (parts: Record<string, number>) => void;
   onStarTypeChange?: (starType: string) => void;
+  onDistanceChange?: (value: number) => void;
+  onRotationChange?: (value: number) => void;
   onBuild?: () => void;
   isLocked?: boolean;
 }
@@ -29,6 +32,8 @@ export function ConfigurationPanel({
   onMassChange,
   onElementCompositionChange,
   onStarTypeChange,
+  onDistanceChange,
+  onRotationChange,
   onBuild,
   isLocked = false,
 }: ConfigurationPanelProps) {
@@ -51,6 +56,25 @@ export function ConfigurationPanel({
     onStarTypeChange?.(newStarType);
   };
 
+  const handlePresetChange = (presetId: string) => {
+    const preset = PLANET_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+
+    // Apply all preset values
+    setElementParts(preset.elementParts);
+    setMass(preset.mass);
+    setDistance(preset.distance);
+    setStarType(preset.starType);
+    setRotation(preset.rotationSpeed);
+
+    // Notify parent components
+    onElementCompositionChange?.(preset.elementParts);
+    onMassChange?.(preset.mass);
+    onDistanceChange?.(preset.distance);
+    onStarTypeChange?.(preset.starType);
+    onRotationChange?.(preset.rotationSpeed);
+  };
+
   const totalParts = Object.values(elementParts).reduce(
     (sum, val) => sum + val,
     0
@@ -61,6 +85,31 @@ export function ConfigurationPanel({
       <Box className={styles.content}>
         <Flex direction="column" gap="6">
           <Heading size="5">Planet Configuration</Heading>
+
+          {/* Preset Selector */}
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold">
+              Quick Start Presets
+            </Text>
+            <Text size="1" color="gray">
+              Choose a preset to automatically configure your planet
+            </Text>
+            <select
+              className={styles.presetSelect}
+              onChange={(e) => handlePresetChange(e.target.value)}
+              disabled={isLocked}
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Select a preset...
+              </option>
+              {PLANET_PRESETS.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.name} - {preset.description}
+                </option>
+              ))}
+            </select>
+          </Flex>
 
           {/* Element Composition */}
           <Flex direction="column" gap="3">
@@ -106,7 +155,10 @@ export function ConfigurationPanel({
                 min={0.1}
                 max={10}
                 step={0.1}
-                onValueChange={(values) => setDistance(values[0])}
+                onValueChange={(values) => {
+                  setDistance(values[0]);
+                  onDistanceChange?.(values[0]);
+                }}
                 disabled={isLocked}
               />
             </Flex>
@@ -141,7 +193,7 @@ export function ConfigurationPanel({
               <Slider
                 value={[mass]}
                 min={0.1}
-                max={100}
+                max={10}
                 step={0.1}
                 onValueChange={(values) => {
                   setMass(values[0]);
@@ -164,7 +216,10 @@ export function ConfigurationPanel({
                 min={1}
                 max={2400}
                 step={1}
-                onValueChange={(values) => setRotation(values[0])}
+                onValueChange={(values) => {
+                  setRotation(values[0]);
+                  onRotationChange?.(values[0]);
+                }}
                 disabled={isLocked}
               />
             </Flex>

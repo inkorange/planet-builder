@@ -6,12 +6,16 @@ import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { PrimordialGasCloud } from "./PrimordialGasCloud";
 import { ElementParticleEffects } from "./ElementParticleEffects";
 import { PlanetFormationAnimation } from "./PlanetFormationAnimation";
+import { Planet } from "./Planet";
+import type { PlanetClassification } from "@/utils/planetSimulation";
+import { getStarColor } from "@/utils/starColors";
 import styles from "./PlanetScene.module.scss";
 
 interface PlanetSceneProps {
   particleDensity?: number;
   luminosity?: number;
   cloudColor?: string;
+  starType?: string;
   elementChanges?: Array<{
     symbol: string;
     color: string;
@@ -20,17 +24,23 @@ interface PlanetSceneProps {
   isBuilding?: boolean;
   isBuilt?: boolean;
   onFormationComplete?: () => void;
+  planetClassification?: PlanetClassification | null;
 }
 
 export function PlanetScene({
   particleDensity = 1,
   luminosity = 1,
   cloudColor = "#6096fa",
+  starType = "G",
   elementChanges = [],
   isBuilding = false,
   isBuilt = false,
   onFormationComplete,
+  planetClassification,
 }: PlanetSceneProps) {
+  // Get star color based on spectral type
+  const starColorData = getStarColor(starType);
+
   return (
     <div className={styles.container}>
       <Canvas
@@ -41,25 +51,33 @@ export function PlanetScene({
         className={styles.canvas}
         resize={{ scroll: false, debounce: 0 }}
       >
-        {/* Ambient light based on star luminosity */}
-        <ambientLight intensity={0.3 * luminosity} />
+        {/* Ambient light for overall scene brightness */}
+        <ambientLight intensity={0.5 * luminosity} color={starColorData.color} />
 
-        {/* Point light representing the star - positioned at center of gas cloud */}
-        <pointLight
-          position={[0, 0, 0]}
-          intensity={luminosity * 50}
-          distance={50}
-          decay={2}
-          color="#ffffff"
+        {/* Directional light representing the star for realistic day/night terminator */}
+        <directionalLight
+          position={[10, 3, 5]}
+          intensity={luminosity * 8}
+          color={starColorData.color}
         />
 
-        {/* Primordial gas cloud */}
-        <PrimordialGasCloud
-          particleDensity={particleDensity}
-          luminosity={luminosity}
-          cloudColor={cloudColor}
-          isBuilding={isBuilding}
-        />
+        {/* Primordial gas cloud - hide when planet is built */}
+        {!isBuilt && (
+          <PrimordialGasCloud
+            particleDensity={particleDensity}
+            luminosity={luminosity}
+            cloudColor={cloudColor}
+            isBuilding={isBuilding}
+          />
+        )}
+
+        {/* Planet - show after formation */}
+        {isBuilt && planetClassification && (
+          <Planet
+            classification={planetClassification}
+            isVisible={isBuilt}
+          />
+        )}
 
         {/* Element particle effects (comets and ejections) */}
         {!isBuilding && !isBuilt && (
@@ -87,8 +105,8 @@ export function PlanetScene({
           maxPolarAngle={(3 * Math.PI) / 4}
         />
 
-        {/* Post-processing effects for motion blur and glow */}
-        <EffectComposer>
+        {/* Post-processing effects disabled for testing */}
+        {/* <EffectComposer>
           <Bloom
             intensity={1.5} // Reduced from 3.0 to prevent burnout
             luminanceThreshold={0.2} // Increased from 0.1 to reduce bloom trigger
@@ -96,7 +114,7 @@ export function PlanetScene({
             mipmapBlur
             radius={1.2} // Reduced from 1.5
           />
-        </EffectComposer>
+        </EffectComposer> */}
       </Canvas>
     </div>
   );
