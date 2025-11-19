@@ -7,6 +7,7 @@ import { PrimordialGasCloud } from "./PrimordialGasCloud";
 import { ElementParticleEffects } from "./ElementParticleEffects";
 import { PlanetFormationAnimation } from "./PlanetFormationAnimation";
 import { Planet } from "./Planet";
+import { Starfield } from "./Starfield";
 import type { PlanetClassification } from "@/utils/planetSimulation";
 import { getStarColor } from "@/utils/starColors";
 import styles from "./PlanetScene.module.scss";
@@ -51,13 +52,19 @@ export function PlanetScene({
         className={styles.canvas}
         resize={{ scroll: false, debounce: 0 }}
       >
-        {/* Ambient light for overall scene brightness */}
-        <ambientLight intensity={0.5 * luminosity} color={starColorData.color} />
+        {/* Starfield background */}
+        <Starfield />
 
-        {/* Directional light representing the star for realistic day/night terminator */}
+        {/* Ambient light - much brighter for gas cloud, normal for planet */}
+        <ambientLight
+          intensity={isBuilt ? 0.5 * luminosity : 1.4 * luminosity}
+          color={starColorData.color}
+        />
+
+        {/* Directional light - centered for gas cloud, angled for planet */}
         <directionalLight
-          position={[10, 3, 5]}
-          intensity={luminosity * 8}
+          position={isBuilt ? [10, 3, 5] : [0, 0, 8]}
+          intensity={isBuilt ? luminosity * 8 : luminosity * 20}
           color={starColorData.color}
         />
 

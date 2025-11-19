@@ -69,7 +69,13 @@ export default function BuilderPage() {
 
   const handleStarTypeChange = (newStarType: string) => {
     setStarType(newStarType);
-    const newLuminosity = calculateLuminosity(newStarType);
+    const newLuminosity = calculateLuminosity(newStarType, distance);
+    setLuminosity(newLuminosity);
+  };
+
+  const handleDistanceChange = (newDistance: number) => {
+    setDistance(newDistance);
+    const newLuminosity = calculateLuminosity(starType, newDistance);
     setLuminosity(newLuminosity);
   };
 
@@ -163,7 +169,7 @@ export default function BuilderPage() {
               onMassChange={setMass}
               onElementCompositionChange={handleElementCompositionChange}
               onStarTypeChange={handleStarTypeChange}
-              onDistanceChange={setDistance}
+              onDistanceChange={handleDistanceChange}
               onRotationChange={setRotationSpeed}
               onBuild={handleBuild}
               isLocked={isBuilding || isBuilt}
