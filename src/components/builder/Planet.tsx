@@ -81,9 +81,9 @@ export function Planet({ classification, isVisible }: PlanetProps) {
 
   return (
     <group ref={planetRef}>
-      {/* Main planet sphere - 25% larger (2 -> 2.5) */}
+      {/* Main planet sphere - 25% larger (2 -> 2.5), increased polygon count (128 -> 160) */}
       <mesh>
-        <sphereGeometry args={[2.5, 128, 128]} />
+        <sphereGeometry args={[2.5, 160, 160]} />
         {getPlanetMaterial()}
       </mesh>
 
