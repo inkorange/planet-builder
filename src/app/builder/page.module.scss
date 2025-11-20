@@ -2,13 +2,28 @@
   height: calc(100vh - 64px);
   width: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+
+  /* Mobile layout - stack vertically */
+  @media (max-width: 720px) {
+    flex-direction: column;
+    height: 100vh;
+  }
 }
 
 .scenePanel {
-  flex: 1 1 70%;
+  flex: 1;
   min-width: 0;
   position: relative;
   height: 100%;
+
+  /* Mobile layout - take 50% height */
+  @media (max-width: 720px) {
+    width: 100%;
+    height: 50%;
+    flex: none;
+  }
 }
 
 .timeline {
@@ -43,9 +58,15 @@
 }
 
 .configPanel {
-  flex: 0 0 30%;
-  min-width: 320px;
-  max-width: 450px;
+  width: 450px;
+  flex-shrink: 0;
   height: 100%;
   overflow: hidden;
+
+  /* Mobile layout - take 50% height and full width */
+  @media (max-width: 720px) {
+    width: 100%;
+    height: 50%;
+    flex: none;
+  }
 }

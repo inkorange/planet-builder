@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
@@ -10,6 +11,7 @@ import { Planet } from "./Planet";
 import { Starfield } from "./Starfield";
 import type { PlanetClassification } from "@/utils/planetSimulation";
 import { getStarColor } from "@/utils/starColors";
+import { calculateHabitabilityScore } from "@/utils/habitabilityScore";
 import styles from "./PlanetScene.module.scss";
 
 interface PlanetSceneProps {
@@ -26,6 +28,7 @@ interface PlanetSceneProps {
   isBuilt?: boolean;
   onFormationComplete?: () => void;
   planetClassification?: PlanetClassification | null;
+  elementParts?: Record<string, number>;
 }
 
 export function PlanetScene({
@@ -38,7 +41,11 @@ export function PlanetScene({
   isBuilt = false,
   onFormationComplete,
   planetClassification,
+  elementParts = {},
 }: PlanetSceneProps) {
+  // Track when to show planet behind flash
+  const [showPlanetBehindFlash, setShowPlanetBehindFlash] = useState(false);
+
   // Get star color based on spectral type
   const starColorData = getStarColor(starType);
 
@@ -78,11 +85,14 @@ export function PlanetScene({
           />
         )}
 
-        {/* Planet - show after formation */}
-        {isBuilt && planetClassification && (
+        {/* Planet - show after formation OR during flash */}
+        {(isBuilt || showPlanetBehindFlash) && planetClassification && (
           <Planet
             classification={planetClassification}
-            isVisible={isBuilt}
+            isVisible={isBuilt || showPlanetBehindFlash}
+            atmosphereScore={
+              calculateHabitabilityScore(planetClassification, elementParts).factors.atmosphere.score
+            }
           />
         )}
 
@@ -96,6 +106,7 @@ export function PlanetScene({
           <PlanetFormationAnimation
             isActive={isBuilding}
             onComplete={onFormationComplete}
+            onFlashStart={() => setShowPlanetBehindFlash(true)}
             cloudColor={cloudColor}
             particleDensity={particleDensity}
           />

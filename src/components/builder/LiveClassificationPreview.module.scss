@@ -1,0 +1,42 @@
+.container {
+  background: var(--gray-2);
+  border: 1px solid var(--gray-6);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.header {
+  color: var(--gray-12);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.content {
+  gap: 12px;
+}
+
+.label {
+  color: var(--gray-11);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.warnings {
+  background: var(--amber-2);
+  border: 1px solid var(--amber-6);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.warningIcon {
+  flex-shrink: 0;
+}
+
+.warningText {
+  color: var(--amber-11);
+  line-height: 1.4;
+}

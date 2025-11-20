@@ -23,6 +23,7 @@ export default function BuilderPage() {
   const [isBuilding, setIsBuilding] = useState(false);
   const [isBuilt, setIsBuilt] = useState(false);
   const [yearsAgo, setYearsAgo] = useState(5000000000); // 5 billion years
+  const [sceneKey, setSceneKey] = useState(0); // Key to force scene re-render on restart
 
   // Planet configuration parameters
   const [elementParts, setElementParts] = useState<Record<string, number>>({});
@@ -83,10 +84,23 @@ export default function BuilderPage() {
     setIsBuilding(true);
     setIsBuilt(false);
 
-    // Start the 4-second formation animation
+    // Calculate planet classification after 2 seconds (when flash begins)
+    // so it's ready to render when flash reaches peak at 2.5s
+    setTimeout(() => {
+      const classification = classifyPlanet({
+        elementParts,
+        distanceFromStar: distance,
+        starType,
+        mass,
+        rotationSpeed,
+      });
+      setPlanetClassification(classification);
+    }, 2000);
+
+    // Start the 6-second formation animation
     // Timeline countdown from 5B years to present
     const startTime = Date.now();
-    const duration = 4000; // 4 seconds
+    const duration = 6000; // 6 seconds
     const startYears = 5000000000;
 
     const countdownInterval = setInterval(() => {
@@ -105,17 +119,6 @@ export default function BuilderPage() {
   const handleFormationComplete = () => {
     setIsBuilding(false);
     setIsBuilt(true);
-
-    // Calculate planet classification based on configuration
-    const classification = classifyPlanet({
-      elementParts,
-      distanceFromStar: distance,
-      starType,
-      mass,
-      rotationSpeed,
-    });
-
-    setPlanetClassification(classification);
   };
 
   const handleRestart = () => {
@@ -124,6 +127,8 @@ export default function BuilderPage() {
     setIsBuilding(false);
     setPlanetClassification(null);
     setYearsAgo(5000000000);
+    // Increment scene key to force complete re-render of the 3D scene
+    setSceneKey(prev => prev + 1);
   };
 
   return (
@@ -132,6 +137,7 @@ export default function BuilderPage() {
         {/* Left side - 3D Visualization (70%) */}
         <Box className={styles.scenePanel}>
           <PlanetScene
+            key={sceneKey}
             particleDensity={mass}
             luminosity={luminosity}
             cloudColor={cloudColor}
@@ -141,6 +147,7 @@ export default function BuilderPage() {
             isBuilt={isBuilt}
             onFormationComplete={handleFormationComplete}
             planetClassification={planetClassification}
+            elementParts={elementParts}
           />
 
           {/* Timeline display at bottom */}

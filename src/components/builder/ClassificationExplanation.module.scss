@@ -1,0 +1,57 @@
+.container {
+  background: var(--gray-2);
+  border: 1px solid var(--gray-6);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.primary {
+  color: var(--gray-12);
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.context {
+  background: var(--blue-2);
+  border-left: 3px solid var(--blue-9);
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.contextText {
+  color: var(--blue-12);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.criteriaHeader {
+  color: var(--gray-11);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.criteriaList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 8px;
+}
+
+.criterion {
+  color: var(--gray-12);
+  line-height: 1.5;
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+  font-size: 13px;
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: var(--gray-9);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+}

@@ -13,6 +13,7 @@ import {
 } from "@radix-ui/themes";
 import { ElementCard } from "./ElementCard";
 import { ElementCompositionBar } from "./ElementCompositionBar";
+import { LiveClassificationPreview } from "./LiveClassificationPreview";
 import { ELEMENTS, STAR_TYPES } from "@/data/elements";
 import { PLANET_PRESETS, type PlanetPreset } from "@/data/planetPresets";
 import styles from "./ConfigurationPanel.module.scss";
@@ -224,6 +225,17 @@ export function ConfigurationPanel({
               />
             </Flex>
           </Flex>
+
+          {/* Live Classification Preview */}
+          {totalParts > 0 && !isLocked && (
+            <LiveClassificationPreview
+              elementParts={elementParts}
+              distance={distance}
+              starType={starType}
+              mass={mass}
+              rotationSpeed={rotation}
+            />
+          )}
 
           {/* Build Button */}
           <Button size="3" disabled={totalParts === 0 || isLocked} onClick={onBuild}>
