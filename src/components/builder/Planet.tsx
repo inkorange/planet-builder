@@ -11,13 +11,16 @@ import { IceWorldMaterial } from "./materials/IceWorldMaterial";
 import { GasGiantMaterial } from "./materials/GasGiantMaterial";
 import { RockyTerrainMaterial } from "./materials/RockyTerrainMaterial";
 import { CloudLayer } from "./CloudLayer";
+import { MagneticField } from "./MagneticField";
+import { AtmosphericHaze } from "./AtmosphericHaze";
 
 interface PlanetProps {
   classification: PlanetClassification;
   isVisible: boolean;
+  atmosphereScore: number;
 }
 
-export function Planet({ classification, isVisible }: PlanetProps) {
+export function Planet({ classification, isVisible, atmosphereScore }: PlanetProps) {
   const planetRef = useRef<THREE.Group>(null);
 
   // Rotate planet slowly
@@ -91,6 +94,20 @@ export function Planet({ classification, isVisible }: PlanetProps) {
       {shouldHaveClouds() && (
         <CloudLayer planetType={classification.type} radius={2.56} />
       )}
+
+      {/* Atmospheric haze effect */}
+      <AtmosphericHaze
+        radius={2.5}
+        atmosphereScore={atmosphereScore}
+        atmosphereType={classification.atmosphereType}
+      />
+
+      {/* Magnetic field visualization */}
+      <MagneticField
+        radius={2.5}
+        visible={classification.hasMagneticField}
+        strength={classification.magneticFieldStrength}
+      />
     </group>
   );
 }

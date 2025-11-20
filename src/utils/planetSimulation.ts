@@ -21,6 +21,7 @@ export interface PlanetClassification {
   surfaceDescription: string;
   hasLife: boolean;
   hasMagneticField: boolean;
+  magneticFieldStrength: number; // 0-100, based on mass and rotation
   geologicalActivity: "none" | "low" | "moderate" | "high" | "extreme";
   color: string; // Hex color for planet appearance
 }
@@ -64,14 +65,46 @@ function calculateEquilibriumTemperature(
 }
 
 /**
- * Determine if planet can retain atmosphere based on mass and temperature
+ * Determine if planet can retain atmosphere based on mass, temperature, and composition
  */
-function canRetainAtmosphere(mass: number, temperature: number): boolean {
+function canRetainAtmosphere(
+  mass: number,
+  temperature: number,
+  elementParts: Record<string, number>
+): boolean {
+  // Check if planet has atmospheric gases
+  const totalParts = Object.values(elementParts).reduce((sum, val) => sum + val, 0);
+  if (totalParts === 0) return false;
+
+  const getPercent = (symbol: string) =>
+    ((elementParts[symbol] || 0) / totalParts) * 100;
+
+  const atmosphericGases = getPercent("N") + getPercent("O") + getPercent("C") +
+                          getPercent("H") + getPercent("He");
+
+  // Need some atmospheric gases to have an atmosphere
+  if (atmosphericGases < 5) return false;
+
   // Escape velocity proportional to sqrt(mass)
   // Molecules move faster at higher temperatures
-  // Simplified: planets > 0.3 Earth masses can retain atmosphere if not too hot
-  if (mass < 0.3) return false;
-  if (temperature > 700) return false; // Too hot, atmosphere escapes
+
+  // Very low mass planets (< 0.1 Earth masses) can't retain atmosphere
+  if (mass < 0.1) return false;
+
+  // Low mass planets (0.1-0.5) can retain heavy molecules (CO2, N2) but not H2/He
+  if (mass < 0.5) {
+    // Can retain CO2, N2, O2 if not too hot
+    if (temperature > 700) return false;
+    return true;
+  }
+
+  // Earth-mass and larger planets can retain most atmospheres
+  // unless extremely hot (>1500K where even heavy molecules escape)
+  if (temperature > 1500) return false;
+
+  // Magnetic field helps retain atmosphere (mass and rotation dependent)
+  // But we'll allow atmospheres even without magnetic fields if conditions are right
+
   return true;
 }
 
@@ -88,6 +121,33 @@ function hasMagneticField(mass: number, rotationHours: number): boolean {
   if (rotationHours > 100) return false; // Too slow for dynamo
 
   return true;
+}
+
+/**
+ * Calculate magnetic field strength (0-100) based on mass and rotation
+ * Strong fields require:
+ * - Sufficient mass for molten metallic core (dynamo)
+ * - Fast rotation to drive the dynamo effect
+ */
+function calculateMagneticFieldStrength(mass: number, rotationHours: number): number {
+  // No field if planet doesn't meet basic criteria
+  if (!hasMagneticField(mass, rotationHours)) return 0;
+
+  let strength = 0;
+
+  // Mass contribution (0-50 points)
+  // Larger mass = more heat retention = longer-lived dynamo
+  // 10+ Earth masses = maximum strength from mass
+  strength += Math.min((mass / 10) * 50, 50);
+
+  // Rotation contribution (0-50 points)
+  // Faster rotation = stronger dynamo effect
+  // Earth rotates in 24 hours (baseline)
+  // 1 hour rotation = maximum strength from rotation
+  const rotationFactor = Math.max(0, 1 - (rotationHours / 100));
+  strength += rotationFactor * 50;
+
+  return Math.min(Math.max(Math.round(strength), 0), 100);
 }
 
 /**
@@ -111,6 +171,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
       surfaceDescription: "Empty void - no elements added",
       hasLife: false,
       hasMagneticField: false,
+      magneticFieldStrength: 0,
       geologicalActivity: "none",
       color: "#2a2a2a",
     };
@@ -135,8 +196,9 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
     starType,
     distanceFromStar
   );
-  const hasAtmosphere = canRetainAtmosphere(mass, temperature);
+  const hasAtmosphere = canRetainAtmosphere(mass, temperature, elementParts);
   const hasMagField = hasMagneticField(mass, rotationSpeed);
+  const magFieldStrength = calculateMagneticFieldStrength(mass, rotationSpeed);
 
   // Determine geological activity
   let geologicalActivity: "none" | "low" | "moderate" | "high" | "extreme" =
@@ -158,6 +220,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "No solid surface - thick gaseous envelope with possible rocky core deep within",
       hasLife: false,
       hasMagneticField: true,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: "extreme",
       color: "#d4a574", // Jupiter-like tan/brown
     };
@@ -173,6 +236,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Icy mantle surrounding rocky core, with hydrogen-helium atmosphere",
       hasLife: false,
       hasMagneticField: true,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: "moderate",
       color: "#4a90e2", // Neptune-like blue
     };
@@ -190,6 +254,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Molten surface with lava flows, volcanic activity everywhere",
       hasLife: false,
       hasMagneticField: hasMagField,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: "extreme",
       color: "#ff4500", // Molten orange-red
     };
@@ -212,6 +277,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Rocky surface with volcanic plains, extreme pressure and heat",
       hasLife: false,
       hasMagneticField: hasMagField,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: geologicalActivity,
       color: "#e8b870", // Yellowish-tan
     };
@@ -229,6 +295,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Frozen surface covered in water ice, possible subsurface ocean if tidal heating present",
       hasLife: false, // Could have subsurface life, but we'll keep it simple
       hasMagneticField: hasMagField,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: mass > 0.5 ? "low" : "none",
       color: "#b0e0ff", // Icy blue-white
     };
@@ -251,6 +318,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Vast oceans covering most of the surface, scattered islands or archipelagos",
       hasLife: true, // High potential for life
       hasMagneticField: hasMagField,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: geologicalActivity,
       color: "#0077be", // Deep ocean blue
     };
@@ -282,6 +350,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Rocky surface with continents, oceans, and active plate tectonics. Diverse biomes if life present.",
       hasLife: hasLifeElements,
       hasMagneticField: true,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: "moderate",
       color: "#2e8b57", // Earth green-blue
     };
@@ -299,6 +368,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
         "Rocky surface with impact craters, possible volcanic features",
       hasLife: false,
       hasMagneticField: hasMagField,
+      magneticFieldStrength: magFieldStrength,
       geologicalActivity: geologicalActivity,
       color: "#8b7355", // Mars-like rust/brown
     };
@@ -312,6 +382,7 @@ export function classifyPlanet(params: PlanetParameters): PlanetClassification {
     surfaceDescription: "Barren rocky surface with unusual elemental composition",
     hasLife: false,
     hasMagneticField: hasMagField,
+    magneticFieldStrength: magFieldStrength,
     geologicalActivity: geologicalActivity,
     color: "#5a5a5a",
   };

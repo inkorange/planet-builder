@@ -7,6 +7,7 @@ import * as THREE from "three";
 interface PlanetFormationAnimationProps {
   isActive: boolean;
   onComplete: () => void;
+  onFlashStart: () => void;
   cloudColor: string;
   particleDensity: number;
 }
@@ -14,6 +15,7 @@ interface PlanetFormationAnimationProps {
 export function PlanetFormationAnimation({
   isActive,
   onComplete,
+  onFlashStart,
   cloudColor,
   particleDensity,
 }: PlanetFormationAnimationProps) {
@@ -21,9 +23,12 @@ export function PlanetFormationAnimation({
   const progressRef = useRef(0);
   const flashMeshRef = useRef<THREE.Mesh | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const flashStartCalledRef = useRef(false);
 
-  const duration = 4000; // 4 seconds total
-  const collapseDuration = 2000; // 2 seconds for collapse before flash starts
+  const duration = 6000; // 6 seconds total
+  const collapseDuration = 2000; // 2 seconds for collapse
+  const flashRampDuration = 500; // 0.5 seconds to reach peak brightness
+  const flashFadeDuration = 3500; // 3.5 seconds to fade out
 
   // Create flash effect mesh
   useEffect(() => {
@@ -58,6 +63,7 @@ export function PlanetFormationAnimation({
     if (isActive) {
       progressRef.current = 0;
       startTimeRef.current = Date.now();
+      flashStartCalledRef.current = false;
     }
   }, [isActive]);
 
@@ -87,32 +93,41 @@ export function PlanetFormationAnimation({
         }
       });
     } else if (elapsed < duration) {
-      // Phase 2 (2-4s): Flash starts while gas is still collapsing (final 2 seconds)
-      const flashPhaseProgress = (elapsed - collapseDuration) / 2000; // 0 to 1 over 2 seconds
+      // Phase 2 (2-6s): Flash ramps to peak, planet renders, then fades
+      const flashElapsed = elapsed - collapseDuration;
+      const peakTime = flashRampDuration; // 0.5s to reach peak
 
-      // Flash opacity: quick flash then fade
-      const flashOpacity = flashPhaseProgress < 0.5
-        ? Math.sin(flashPhaseProgress * 2 * Math.PI) // Quick flash in first half
-        : 1 - (flashPhaseProgress - 0.5) * 2; // Fade out in second half
+      let flashOpacity: number;
+      let brightness: number;
+
+      if (flashElapsed < flashRampDuration) {
+        // Ramp up: 0-0.5s - quick ramp to peak brightness
+        const rampProgress = flashElapsed / flashRampDuration; // 0 to 1
+        flashOpacity = rampProgress; // 0 → 1
+        brightness = THREE.MathUtils.lerp(7, 20, rampProgress); // 7x → 20x
+      } else {
+        // At peak or fading: 0.5s-4s
+        // Call onFlashStart once when flash reaches peak (at 0.5s)
+        if (!flashStartCalledRef.current) {
+          flashStartCalledRef.current = true;
+          onFlashStart(); // Planet renders NOW at peak brightness
+        }
+
+        // Fade out: 0.5s-4s (3.5 seconds)
+        const fadeElapsed = flashElapsed - flashRampDuration;
+        const fadeProgress = Math.min(fadeElapsed / flashFadeDuration, 1); // 0 to 1
+        flashOpacity = Math.max(0, 1 - fadeProgress); // 1 → 0
+        brightness = THREE.MathUtils.lerp(20, 1, fadeProgress); // 20x → 1x
+      }
 
       if (flashMeshRef.current) {
         (flashMeshRef.current.material as THREE.MeshBasicMaterial).opacity = flashOpacity;
         flashMeshRef.current.lookAt(state.camera.position);
       }
 
-      // Extreme brightness during flash, then fade back
-      const brightnessPhase = flashPhaseProgress < 0.5
-        ? 7 + flashPhaseProgress * 2 * 8 // Continue from 7x to 15x
-        : 15 - (flashPhaseProgress - 0.5) * 2 * 14; // Fade back
-
       state.scene.traverse((obj) => {
         if (obj instanceof THREE.PointLight) {
-          const targetIntensity = obj.userData.baseIntensity || 50;
-          if (flashPhaseProgress < 0.5) {
-            obj.intensity = obj.userData.baseIntensity * brightnessPhase;
-          } else {
-            obj.intensity = THREE.MathUtils.lerp(obj.userData.baseIntensity * 15, targetIntensity, (flashPhaseProgress - 0.5) * 2);
-          }
+          obj.intensity = obj.userData.baseIntensity * brightness;
         }
       });
     } else {
