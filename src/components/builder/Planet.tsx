@@ -18,15 +18,23 @@ interface PlanetProps {
   classification: PlanetClassification;
   isVisible: boolean;
   atmosphereScore: number;
+  rotationSpeed: number; // hours per day
 }
 
-export function Planet({ classification, isVisible, atmosphereScore }: PlanetProps) {
+export function Planet({ classification, isVisible, atmosphereScore, rotationSpeed }: PlanetProps) {
   const planetRef = useRef<THREE.Group>(null);
 
-  // Rotate planet slowly
+  // Rotate planet based on rotation period
+  // Earth rotates once every 24 hours (1 day)
+  // Faster rotation (fewer hours) = faster visual spin
+  // Slower rotation (more hours) = slower visual spin
   useFrame(() => {
     if (planetRef.current && isVisible) {
-      planetRef.current.rotation.y += 0.001; // Slow rotation
+      // Base rotation speed for 24 hours (Earth)
+      const baseSpeed = 0.001;
+      // Invert the relationship: fewer hours = faster rotation
+      const speedMultiplier = 24 / rotationSpeed;
+      planetRef.current.rotation.y += baseSpeed * speedMultiplier;
     }
   });
 
@@ -84,9 +92,9 @@ export function Planet({ classification, isVisible, atmosphereScore }: PlanetPro
 
   return (
     <group ref={planetRef}>
-      {/* Main planet sphere - 25% larger (2 -> 2.5), increased polygon count (128 -> 160) */}
+      {/* Main planet sphere - optimized polygon count for performance */}
       <mesh>
-        <sphereGeometry args={[2.5, 160, 160]} />
+        <sphereGeometry args={[2.5, 64, 64]} />
         {getPlanetMaterial()}
       </mesh>
 

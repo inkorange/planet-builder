@@ -9,6 +9,7 @@ export interface HabitabilityBreakdown {
     magneticField: { score: number; reason: string };
     geology: { score: number; reason: string };
     chemistry: { score: number; reason: string };
+    rotation: { score: number; reason: string };
   };
   rating: "Uninhabitable" | "Extremely Harsh" | "Marginal" | "Habitable" | "Highly Habitable";
 }
@@ -18,16 +19,44 @@ export interface HabitabilityBreakdown {
  */
 export function calculateHabitabilityScore(
   classification: PlanetClassification,
-  elementParts: Record<string, number>
+  elementParts: Record<string, number>,
+  rotationSpeed?: number
 ): HabitabilityBreakdown {
-  const factors = {
+  const rotationHours = rotationSpeed || 24;
+
+  // Calculate base factors
+  let factors = {
     temperature: scoreTemperature(classification.temperature),
     atmosphere: scoreAtmosphere(classification),
     water: scoreWater(elementParts, classification),
     magneticField: scoreMagneticField(classification),
     geology: scoreGeology(classification),
     chemistry: scoreChemistry(elementParts, classification),
+    rotation: scoreRotation(rotationHours, classification),
   };
+
+  // Extreme rotation affects atmosphere and water retention
+  // Very fast rotation (< 4 hours) prevents atmosphere retention
+  // Very slow rotation (> 200 hours) causes atmospheric stripping
+  if (rotationHours < 4) {
+    // Catastrophic/extreme fast rotation - atmosphere would be stripped away
+    const rotationPenalty = rotationHours < 2 ? 0.1 : 0.3; // 90% or 70% reduction
+    factors.atmosphere = {
+      score: Math.round(factors.atmosphere.score * rotationPenalty),
+      reason: `${factors.atmosphere.reason} (severely compromised by extreme rotation)`,
+    };
+    factors.water = {
+      score: Math.round(factors.water.score * rotationPenalty),
+      reason: `${factors.water.reason} (water stripped by extreme rotation)`,
+    };
+  } else if (rotationHours > 200) {
+    // Very slow rotation - atmospheric stripping on day side
+    const slowPenalty = rotationHours > 500 ? 0.4 : 0.6;
+    factors.atmosphere = {
+      score: Math.round(factors.atmosphere.score * slowPenalty),
+      reason: `${factors.atmosphere.reason} (partially stripped by slow rotation)`,
+    };
+  }
 
   const totalScore = Math.round(
     (factors.temperature.score +
@@ -35,8 +64,9 @@ export function calculateHabitabilityScore(
       factors.water.score +
       factors.magneticField.score +
       factors.geology.score +
-      factors.chemistry.score) /
-      6
+      factors.chemistry.score +
+      factors.rotation.score) /
+      7
   );
 
   const rating = getRating(totalScore);
@@ -272,6 +302,66 @@ function scoreChemistry(
     score: 20,
     reason: "Limited organic chemistry potential",
   };
+}
+
+function scoreRotation(
+  rotationHours: number,
+  classification: PlanetClassification
+): { score: number; reason: string } {
+  // Realistic rotation limits:
+  // < 2 hours: Catastrophic - planet would tear itself apart from centrifugal force
+  // 2-4 hours: Uninhabitable - extreme winds (1000+ mph), massive storms, structural stress
+  // 4-8 hours: Very harsh - hurricane-force winds globally, severe weather
+  // 8-16 hours: Challenging but possible - strong weather patterns
+  // 16-40 hours: Optimal range (Earth is 24 hours)
+  // 40-100 hours: Challenging - significant day/night temperature swings
+  // 100-500 hours: Very harsh - extreme temperature differences, one side bakes
+  // > 500 hours: Tidally locked - permanent day/night sides
+
+  if (rotationHours < 2) {
+    return {
+      score: 0,
+      reason: "Catastrophic rotation - centrifugal forces would destroy surface structures and prevent atmosphere retention",
+    };
+  } else if (rotationHours < 4) {
+    return {
+      score: 5,
+      reason: "Extreme rotation (< 4 hrs) - winds exceeding 1000 mph, constant category 5 hurricanes, uninhabitable surface",
+    };
+  } else if (rotationHours < 8) {
+    return {
+      score: 25,
+      reason: "Very fast rotation - perpetual hurricane-force winds, extreme Coriolis effects, hazardous for complex life",
+    };
+  } else if (rotationHours < 16) {
+    return {
+      score: 60,
+      reason: "Fast rotation - strong global wind patterns and weather systems, but manageable",
+    };
+  } else if (rotationHours >= 16 && rotationHours <= 40) {
+    return {
+      score: 100,
+      reason: "Optimal rotation period - balanced day/night cycle, moderate weather, and good heat distribution",
+    };
+  } else if (rotationHours > 40 && rotationHours <= 100) {
+    return {
+      score: 65,
+      reason: "Slow rotation - significant day/night temperature variations, but life can adapt",
+    };
+  } else if (rotationHours > 100 && rotationHours <= 500) {
+    // Very slow rotation
+    const tempVariation = classification.temperature > 273 ? "extreme" : "severe";
+    return {
+      score: 30,
+      reason: `Very slow rotation - ${tempVariation} temperature swings between eternal day and night sides`,
+    };
+  } else {
+    // Tidally locked or nearly so (> 500 hours / ~21 Earth days)
+    return {
+      score: 10,
+      reason: "Near tidally locked - one hemisphere perpetually scorched, other frozen, narrow habitable twilight zone only",
+    };
+  }
 }
 
 function getRating(score: number): HabitabilityBreakdown["rating"] {

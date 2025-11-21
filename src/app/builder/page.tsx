@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Flex, Box, Button } from "@radix-ui/themes";
 import { PageLayout } from "@/components/layout";
 import { PlanetScene } from "@/components/builder/PlanetScene";
@@ -9,6 +9,7 @@ import { ResultsPanel } from "@/components/builder/ResultsPanel";
 import { calculateCloudColor, calculateLuminosity } from "@/utils/planetCalculations";
 import { classifyPlanet, type PlanetClassification } from "@/utils/planetSimulation";
 import { ELEMENTS } from "@/data/elements";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import styles from "./page.module.scss";
 
 export default function BuilderPage() {
@@ -131,6 +132,29 @@ export default function BuilderPage() {
     setSceneKey(prev => prev + 1);
   };
 
+  // Keyboard shortcuts
+  const shortcuts = useMemo(() => [
+    {
+      key: 'r',
+      ctrlKey: true,
+      callback: handleRestart,
+      description: 'Restart planet builder',
+    },
+    {
+      key: 'b',
+      ctrlKey: true,
+      callback: () => {
+        const totalParts = Object.values(elementParts).reduce((sum, val) => sum + val, 0);
+        if (totalParts > 0 && !isBuilding && !isBuilt) {
+          handleBuild();
+        }
+      },
+      description: 'Build planet (when configuration is valid)',
+    },
+  ], [elementParts, isBuilding, isBuilt]);
+
+  useKeyboardShortcuts(shortcuts, true);
+
   return (
     <PageLayout>
       <Flex className={styles.container}>
@@ -148,10 +172,16 @@ export default function BuilderPage() {
             onFormationComplete={handleFormationComplete}
             planetClassification={planetClassification}
             elementParts={elementParts}
+            rotationSpeed={rotationSpeed}
           />
 
           {/* Timeline display at bottom */}
           <Box className={styles.timeline}>
+            {isBuilding && (
+              <Box className={styles.loadingIndicator}>
+                <span className={styles.spinner}></span>
+              </Box>
+            )}
             {yearsAgo > 0 ? (
               <span>{(yearsAgo / 1000000000).toFixed(2)} Billion Years Ago</span>
             ) : (
@@ -171,7 +201,7 @@ export default function BuilderPage() {
 
         {/* Right side - Configuration Panel (30%) or Results Panel after build */}
         <Box className={styles.configPanel}>
-          {!isBuilt ? (
+          {!planetClassification ? (
             <ConfigurationPanel
               onMassChange={setMass}
               onElementCompositionChange={handleElementCompositionChange}
@@ -182,16 +212,14 @@ export default function BuilderPage() {
               isLocked={isBuilding || isBuilt}
             />
           ) : (
-            planetClassification && (
-              <ResultsPanel
-                classification={planetClassification}
-                elementParts={elementParts}
-                distance={distance}
-                starType={starType}
-                mass={mass}
-                rotationSpeed={rotationSpeed}
-              />
-            )
+            <ResultsPanel
+              classification={planetClassification}
+              elementParts={elementParts}
+              distance={distance}
+              starType={starType}
+              mass={mass}
+              rotationSpeed={rotationSpeed}
+            />
           )}
         </Box>
       </Flex>

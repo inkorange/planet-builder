@@ -5,8 +5,8 @@
   display: flex;
   flex-direction: row;
 
-  /* Mobile layout - stack vertically */
-  @media (max-width: 720px) {
+  /* Tablet layout - stack vertically */
+  @media (max-width: 1024px) {
     flex-direction: column;
     height: 100vh;
   }
@@ -18,11 +18,16 @@
   position: relative;
   height: 100%;
 
-  /* Mobile layout - take 50% height */
-  @media (max-width: 720px) {
+  /* Tablet layout - take 60% height */
+  @media (max-width: 1024px) {
     width: 100%;
-    height: 50%;
+    height: 60%;
     flex: none;
+  }
+
+  /* Mobile layout - take 50% height */
+  @media (max-width: 640px) {
+    height: 50%;
   }
 }
 
@@ -39,6 +44,31 @@
   color: #ffffff;
   z-index: 10;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loadingIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .restartButton {
@@ -63,10 +93,15 @@
   height: 100%;
   overflow: hidden;
 
-  /* Mobile layout - take 50% height and full width */
-  @media (max-width: 720px) {
+  /* Tablet layout - take 40% height and full width */
+  @media (max-width: 1024px) {
     width: 100%;
-    height: 50%;
+    height: 40%;
     flex: none;
+  }
+
+  /* Mobile layout - take 50% height */
+  @media (max-width: 640px) {
+    height: 50%;
   }
 }

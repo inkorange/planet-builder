@@ -10,7 +10,9 @@ import {
   Button,
   RadioGroup,
   ScrollArea,
+  Callout,
 } from "@radix-ui/themes";
+import { ExclamationTriangleIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { ElementCard } from "./ElementCard";
 import { ElementCompositionBar } from "./ElementCompositionBar";
 import { LiveClassificationPreview } from "./LiveClassificationPreview";
@@ -81,6 +83,11 @@ export function ConfigurationPanel({
     0
   );
 
+  // Validation states
+  const hasElements = totalParts > 0;
+  const isCompositionValid = totalParts <= 100;
+  const canBuild = hasElements && isCompositionValid && !isLocked;
+
   return (
     <ScrollArea className={styles.scrollArea}>
       <Box className={styles.content}>
@@ -100,6 +107,7 @@ export function ConfigurationPanel({
               onChange={(e) => handlePresetChange(e.target.value)}
               disabled={isLocked}
               defaultValue=""
+              aria-label="Select planet preset"
             >
               <option value="" disabled>
                 Select a preset...
@@ -135,6 +143,28 @@ export function ConfigurationPanel({
 
             {/* Bar Chart Visualization - Below cards to prevent layout shift */}
             <ElementCompositionBar elementParts={elementParts} />
+
+            {/* Validation Feedback */}
+            {totalParts > 100 && (
+              <Callout.Root color="red" size="1">
+                <Callout.Icon>
+                  <ExclamationTriangleIcon />
+                </Callout.Icon>
+                <Callout.Text>
+                  Total composition exceeds 100 parts ({totalParts} parts). Please reduce element amounts.
+                </Callout.Text>
+              </Callout.Root>
+            )}
+            {totalParts > 0 && totalParts <= 100 && (
+              <Callout.Root color="green" size="1">
+                <Callout.Icon>
+                  <InfoCircledIcon />
+                </Callout.Icon>
+                <Callout.Text>
+                  Composition valid: {totalParts} / 100 parts used
+                </Callout.Text>
+              </Callout.Root>
+            )}
           </Flex>
 
           {/* Environmental Parameters */}
@@ -161,6 +191,7 @@ export function ConfigurationPanel({
                   onDistanceChange?.(values[0]);
                 }}
                 disabled={isLocked}
+                aria-label="Distance from star in astronomical units"
               />
             </Flex>
 
@@ -201,6 +232,7 @@ export function ConfigurationPanel({
                   onMassChange?.(values[0]);
                 }}
                 disabled={isLocked}
+                aria-label="Planet initial mass in Earth masses"
               />
             </Flex>
 
@@ -222,6 +254,7 @@ export function ConfigurationPanel({
                   onRotationChange?.(values[0]);
                 }}
                 disabled={isLocked}
+                aria-label="Planet rotation speed in hours per day"
               />
             </Flex>
           </Flex>
@@ -238,11 +271,18 @@ export function ConfigurationPanel({
           )}
 
           {/* Build Button */}
-          <Button size="3" disabled={totalParts === 0 || isLocked} onClick={onBuild}>
-            {totalParts === 0
+          <Button
+            size="3"
+            disabled={!canBuild}
+            onClick={onBuild}
+            aria-label="Build planet with current configuration"
+          >
+            {!hasElements
               ? "Add elements to build planet"
+              : !isCompositionValid
+              ? "Invalid composition"
               : isLocked
-              ? "Planet Built"
+              ? "Building Planet..."
               : "Build Planet"}
           </Button>
         </Flex>
