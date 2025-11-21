@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
@@ -29,6 +29,7 @@ interface PlanetSceneProps {
   onFormationComplete?: () => void;
   planetClassification?: PlanetClassification | null;
   elementParts?: Record<string, number>;
+  rotationSpeed?: number;
 }
 
 export function PlanetScene({
@@ -42,9 +43,17 @@ export function PlanetScene({
   onFormationComplete,
   planetClassification,
   elementParts = {},
+  rotationSpeed = 24,
 }: PlanetSceneProps) {
   // Track when to show planet behind flash
   const [showPlanetBehindFlash, setShowPlanetBehindFlash] = useState(false);
+
+  // Reset showPlanetBehindFlash when returning to dust cloud mode
+  useEffect(() => {
+    if (!isBuilding && !isBuilt) {
+      setShowPlanetBehindFlash(false);
+    }
+  }, [isBuilding, isBuilt]);
 
   // Get star color based on spectral type
   const starColorData = getStarColor(starType);
@@ -64,12 +73,14 @@ export function PlanetScene({
 
         {/* Ambient light - much brighter for gas cloud, normal for planet */}
         <ambientLight
+          key={`ambient-${isBuilt ? 'planet' : 'cloud'}`}
           intensity={isBuilt ? 0.5 * luminosity : 1.4 * luminosity}
           color={starColorData.color}
         />
 
         {/* Directional light - centered for gas cloud, angled for planet */}
         <directionalLight
+          key={`directional-${isBuilt ? 'planet' : 'cloud'}`}
           position={isBuilt ? [10, 3, 5] : [0, 0, 8]}
           intensity={isBuilt ? luminosity * 8 : luminosity * 20}
           color={starColorData.color}
@@ -91,8 +102,9 @@ export function PlanetScene({
             classification={planetClassification}
             isVisible={isBuilt || showPlanetBehindFlash}
             atmosphereScore={
-              calculateHabitabilityScore(planetClassification, elementParts).factors.atmosphere.score
+              calculateHabitabilityScore(planetClassification, elementParts, rotationSpeed).factors.atmosphere.score
             }
+            rotationSpeed={rotationSpeed}
           />
         )}
 

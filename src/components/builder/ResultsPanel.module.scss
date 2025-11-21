@@ -1,10 +1,22 @@
 .scrollArea {
   height: 100%;
   width: 100%;
+  animation: fadeIn 0.4s ease-in;
 }
 
 .content {
   padding: 24px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .sectionContainer {
@@ -12,4 +24,10 @@
   border: 1px solid var(--gray-6);
   border-radius: 8px;
   padding: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--gray-7);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 }

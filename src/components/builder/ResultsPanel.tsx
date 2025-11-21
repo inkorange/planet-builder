@@ -76,8 +76,8 @@ export function ResultsPanel({
 
   // Calculate habitability score
   const habitabilityBreakdown = useMemo(
-    () => calculateHabitabilityScore(classification, elementParts),
-    [classification, elementParts]
+    () => calculateHabitabilityScore(classification, elementParts, rotationSpeed),
+    [classification, elementParts, rotationSpeed]
   );
 
   return (

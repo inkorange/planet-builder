@@ -22,10 +22,11 @@ export function PrimordialGasCloud({
   const buildStartTime = useRef<number | null>(null);
 
   // Use a fixed maximum particle count to avoid buffer resizing issues
-  const maxParticleCount = 54000; // Increased by 25% from 43200
+  // Reduced for better performance while maintaining visual quality
+  const maxParticleCount = 25000;
 
   // Calculate active particle count based on density (mass)
-  const activeParticleCount = Math.floor(13500 + particleDensity * 405); // Increased by 25%
+  const activeParticleCount = Math.floor(8000 + particleDensity * 200);
 
   // Create a sprite texture for soft, cloud-like particles
   const spriteTexture = useMemo(() => {
