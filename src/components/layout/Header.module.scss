@@ -1,0 +1,21 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--gray-a6);
+  backdrop-filter: blur(8px);
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+}
+
+.title {
+  font-family: var(--font-orbitron);
+}

@@ -1,0 +1,115 @@
+.container {
+  height: 100vh;
+  background: var(--color-background);
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Mobile - remove padding and allow scroll */
+  @media (max-width: 768px) {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.card {
+  max-width: 1200px;
+  width: 100%;
+  background: var(--gray-a2);
+  border: 1px solid var(--gray-a6);
+
+  /* Mobile - full height, no border radius */
+  @media (max-width: 768px) {
+    height: 100%;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+.cardContent {
+  min-height: 600px;
+  display: flex;
+  gap: 0;
+
+  /* Mobile - stack vertically and full height */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    min-height: auto;
+    height: 100%;
+  }
+}
+
+.imageSection {
+  flex: 0 0 60%;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Mobile - full width, no padding on sides */
+  @media (max-width: 768px) {
+    flex: none;
+    width: 100%;
+    padding: 0;
+    order: -1; /* Move image to top */
+  }
+}
+
+.contentSection {
+  flex: 0 0 40%;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+
+  /* Mobile - full width, scrollable with fixed heading */
+  @media (max-width: 768px) {
+    flex: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    overflow-y: auto;
+    justify-content: flex-start;
+  }
+}
+
+.textContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  /* Mobile - add padding and make scrollable */
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    flex: 1;
+  }
+}
+
+.heading {
+  font-family: var(--font-orbitron);
+
+  /* Mobile - sticky at top */
+  @media (max-width: 768px) {
+    position: sticky;
+    top: 0;
+    background: var(--color-background);
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    margin: -1.5rem -1.5rem 0 -1.5rem;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+}
+
+.buttonSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+
+  /* Mobile - add bottom padding */
+  @media (max-width: 768px) {
+    padding-bottom: 1.5rem;
+  }
+}

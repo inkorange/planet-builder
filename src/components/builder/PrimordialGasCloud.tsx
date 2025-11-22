@@ -26,7 +26,8 @@ export function PrimordialGasCloud({
   const maxParticleCount = 25000;
 
   // Calculate active particle count based on density (mass)
-  const activeParticleCount = Math.floor(8000 + particleDensity * 200);
+  // Range: 2,500 particles at 0.1 mass to 22,500 particles at 10 mass
+  const activeParticleCount = Math.floor(500 + particleDensity * 2200);
 
   // Create a sprite texture for soft, cloud-like particles
   const spriteTexture = useMemo(() => {

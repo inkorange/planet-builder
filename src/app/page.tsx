@@ -4,53 +4,22 @@ import { Heading, Text, Button, Flex, Box, Card } from "@radix-ui/themes";
 import Link from "next/link";
 import { HeroImage } from "@/components/landing/HeroImage";
 import { AboutDialog } from "@/components/landing/AboutDialog";
+import styles from "./page.module.scss";
 
 export default function Home() {
   return (
-    <Flex
-      align="center"
-      justify="center"
-      style={{
-        minHeight: "100vh",
-        background: "var(--color-background)",
-        padding: "2rem",
-      }}
-    >
-      <Card
-        size="4"
-        style={{
-          maxWidth: "1200px",
-          width: "100%",
-          background: "var(--gray-a2)",
-          border: "1px solid var(--gray-a6)",
-        }}
-      >
-        <Flex gap="0" style={{ minHeight: "600px" }}>
-          {/* Left side - Image (60%) */}
-          <Box
-            style={{
-              flex: "0 0 60%",
-              padding: "2rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+    <Flex className={styles.container}>
+      <Card size="4" className={styles.card}>
+        <Flex className={styles.cardContent}>
+          {/* Image Section (60% on desktop, 100% width on mobile, positioned at top) */}
+          <Box className={styles.imageSection}>
             <HeroImage />
           </Box>
 
-          {/* Right side - Content (40%) */}
-          <Flex
-            direction="column"
-            justify="center"
-            gap="5"
-            style={{
-              flex: "0 0 40%",
-              padding: "3rem 2rem",
-            }}
-          >
-            <Flex direction="column" gap="3">
-              <Heading size="8" weight="bold">
+          {/* Content Section (40% on desktop, 100% width on mobile) */}
+          <Flex className={styles.contentSection}>
+            <Flex className={styles.textContent}>
+              <Heading size="8" weight="bold" className={styles.heading}>
                 Planet Builder
               </Heading>
 
@@ -71,7 +40,7 @@ export default function Home() {
               </Text>
             </Flex>
 
-            <Flex direction="column" gap="3" mt="2">
+            <Flex className={styles.buttonSection}>
               <Link href="/builder" style={{ textDecoration: "none" }}>
                 <Button size="4" style={{ width: "100%", cursor: "pointer" }}>
                   Let&apos;s Create!

@@ -19,13 +19,16 @@ export function ElementCard({
   onPartsChange,
   disabled = false,
 }: ElementCardProps) {
+  // Ensure parts is always a valid number
+  const currentParts = parts || 0;
+
   const handleIncrease = () => {
-    onPartsChange(parts + 1);
+    onPartsChange(currentParts + 1);
   };
 
   const handleDecrease = () => {
-    if (parts > 0) {
-      onPartsChange(parts - 1);
+    if (currentParts > 0) {
+      onPartsChange(currentParts - 1);
     }
   };
 
@@ -44,7 +47,7 @@ export function ElementCard({
               {element.symbol}
             </Text>
             <Text className={styles.parts}>
-              {parts} {parts === 1 ? "part" : "parts"}
+              {currentParts} {currentParts === 1 ? "part" : "parts"}
             </Text>
           </Flex>
           <Text className={styles.name}>
@@ -55,7 +58,7 @@ export function ElementCard({
               size="1"
               variant="soft"
               onClick={handleDecrease}
-              disabled={parts === 0 || disabled}
+              disabled={currentParts === 0 || disabled}
             >
               <MinusIcon />
             </IconButton>
