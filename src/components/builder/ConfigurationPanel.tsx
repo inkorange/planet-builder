@@ -10,9 +10,7 @@ import {
   Button,
   RadioGroup,
   ScrollArea,
-  Callout,
 } from "@radix-ui/themes";
-import { ExclamationTriangleIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { ElementCard } from "./ElementCard";
 import { ElementCompositionBar } from "./ElementCompositionBar";
 import { LiveClassificationPreview } from "./LiveClassificationPreview";
@@ -29,6 +27,12 @@ interface ConfigurationPanelProps {
   onRotationChange?: (value: number) => void;
   onBuild?: () => void;
   isLocked?: boolean;
+  // Initial values for editing mode
+  initialElementParts?: Record<string, number>;
+  initialDistance?: number;
+  initialStarType?: string;
+  initialMass?: number;
+  initialRotation?: number;
 }
 
 export function ConfigurationPanel({
@@ -39,14 +43,19 @@ export function ConfigurationPanel({
   onRotationChange,
   onBuild,
   isLocked = false,
+  initialElementParts,
+  initialDistance = 1,
+  initialStarType = "G",
+  initialMass = 1,
+  initialRotation = 24,
 }: ConfigurationPanelProps) {
   const [elementParts, setElementParts] = useState<Record<string, number>>(
-    ELEMENTS.reduce((acc, el) => ({ ...acc, [el.symbol]: 0 }), {})
+    initialElementParts || ELEMENTS.reduce((acc, el) => ({ ...acc, [el.symbol]: 0 }), {})
   );
-  const [distance, setDistance] = useState(1);
-  const [starType, setStarType] = useState("G");
-  const [mass, setMass] = useState(1);
-  const [rotation, setRotation] = useState(24);
+  const [distance, setDistance] = useState(initialDistance);
+  const [starType, setStarType] = useState(initialStarType);
+  const [mass, setMass] = useState(initialMass);
+  const [rotation, setRotation] = useState(initialRotation);
 
   const handleElementChange = (symbol: string, value: number) => {
     const newParts = { ...elementParts, [symbol]: value };
@@ -63,15 +72,20 @@ export function ConfigurationPanel({
     const preset = PLANET_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
 
+    // Merge preset elementParts with the initialized element parts (all elements set to 0)
+    // This ensures all elements have a value, even if not in the preset
+    const initializedElements = ELEMENTS.reduce((acc, el) => ({ ...acc, [el.symbol]: 0 }), {});
+    const mergedElementParts = { ...initializedElements, ...preset.elementParts };
+
     // Apply all preset values
-    setElementParts(preset.elementParts);
+    setElementParts(mergedElementParts);
     setMass(preset.mass);
     setDistance(preset.distance);
     setStarType(preset.starType);
     setRotation(preset.rotationSpeed);
 
     // Notify parent components
-    onElementCompositionChange?.(preset.elementParts);
+    onElementCompositionChange?.(mergedElementParts);
     onMassChange?.(preset.mass);
     onDistanceChange?.(preset.distance);
     onStarTypeChange?.(preset.starType);
@@ -85,8 +99,7 @@ export function ConfigurationPanel({
 
   // Validation states
   const hasElements = totalParts > 0;
-  const isCompositionValid = totalParts <= 100;
-  const canBuild = hasElements && isCompositionValid && !isLocked;
+  const canBuild = hasElements && !isLocked;
 
   return (
     <ScrollArea className={styles.scrollArea}>
@@ -143,28 +156,6 @@ export function ConfigurationPanel({
 
             {/* Bar Chart Visualization - Below cards to prevent layout shift */}
             <ElementCompositionBar elementParts={elementParts} />
-
-            {/* Validation Feedback */}
-            {totalParts > 100 && (
-              <Callout.Root color="red" size="1">
-                <Callout.Icon>
-                  <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>
-                  Total composition exceeds 100 parts ({totalParts} parts). Please reduce element amounts.
-                </Callout.Text>
-              </Callout.Root>
-            )}
-            {totalParts > 0 && totalParts <= 100 && (
-              <Callout.Root color="green" size="1">
-                <Callout.Icon>
-                  <InfoCircledIcon />
-                </Callout.Icon>
-                <Callout.Text>
-                  Composition valid: {totalParts} / 100 parts used
-                </Callout.Text>
-              </Callout.Root>
-            )}
           </Flex>
 
           {/* Environmental Parameters */}
@@ -279,8 +270,6 @@ export function ConfigurationPanel({
           >
             {!hasElements
               ? "Add elements to build planet"
-              : !isCompositionValid
-              ? "Invalid composition"
               : isLocked
               ? "Building Planet..."
               : "Build Planet"}

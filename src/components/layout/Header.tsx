@@ -1,17 +1,13 @@
 import { Flex, Heading, Button } from "@radix-ui/themes";
 import Link from "next/link";
+import styles from "./Header.module.scss";
 
 export function Header() {
   return (
-    <header style={{ borderBottom: "1px solid var(--gray-a6)" }}>
-      <Flex
-        justify="between"
-        align="center"
-        px="6"
-        py="4"
-      >
+    <header className={styles.header}>
+      <Flex className={styles.content}>
         <Link href="/" style={{ textDecoration: "none" }}>
-          <Heading size="6">Planet Builder</Heading>
+          <Heading size="6" className={styles.title}>Planet Builder</Heading>
         </Link>
         <Flex gap="3">
           <Link href="/builder">

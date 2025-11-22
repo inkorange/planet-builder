@@ -35,10 +35,20 @@ export default function BuilderPage() {
 
   const previousElementParts = useRef<Record<string, number>>({});
 
+  // Update cloud color whenever element composition changes
+  useEffect(() => {
+    const newColor = calculateCloudColor(elementParts);
+    setCloudColor(newColor);
+  }, [elementParts]);
+
+  // Update luminosity whenever star type or distance changes
+  useEffect(() => {
+    const newLuminosity = calculateLuminosity(starType, distance);
+    setLuminosity(newLuminosity);
+  }, [starType, distance]);
+
   const handleElementCompositionChange = (newElementParts: Record<string, number>) => {
     setElementParts(newElementParts);
-    const newColor = calculateCloudColor(newElementParts);
-    setCloudColor(newColor);
 
     // Detect changes in element composition
     const changes: Array<{ symbol: string; color: string; change: number }> = [];
@@ -71,14 +81,12 @@ export default function BuilderPage() {
 
   const handleStarTypeChange = (newStarType: string) => {
     setStarType(newStarType);
-    const newLuminosity = calculateLuminosity(newStarType, distance);
-    setLuminosity(newLuminosity);
+    // Luminosity will be automatically updated by useEffect
   };
 
   const handleDistanceChange = (newDistance: number) => {
     setDistance(newDistance);
-    const newLuminosity = calculateLuminosity(starType, newDistance);
-    setLuminosity(newLuminosity);
+    // Luminosity will be automatically updated by useEffect
   };
 
   const handleBuild = () => {
@@ -129,6 +137,16 @@ export default function BuilderPage() {
     setPlanetClassification(null);
     setYearsAgo(5000000000);
     // Increment scene key to force complete re-render of the 3D scene
+    setSceneKey(prev => prev + 1);
+  };
+
+  const handleEditAgain = () => {
+    // Go back to configuration mode but keep current settings
+    setIsBuilt(false);
+    setIsBuilding(false);
+    setPlanetClassification(null);
+    setYearsAgo(5000000000);
+    // Increment scene key to reset the 3D scene
     setSceneKey(prev => prev + 1);
   };
 
@@ -189,9 +207,12 @@ export default function BuilderPage() {
             )}
           </Box>
 
-          {/* Restart button - bottom left */}
+          {/* Action buttons - bottom left */}
           {isBuilt && (
-            <Box className={styles.restartButton}>
+            <Box className={styles.actionButtons}>
+              <Button size="3" onClick={handleEditAgain} variant="soft">
+                Edit Again
+              </Button>
               <Button size="3" onClick={handleRestart} variant="solid">
                 Start Over
               </Button>
@@ -210,6 +231,11 @@ export default function BuilderPage() {
               onRotationChange={setRotationSpeed}
               onBuild={handleBuild}
               isLocked={isBuilding || isBuilt}
+              initialElementParts={elementParts}
+              initialDistance={distance}
+              initialStarType={starType}
+              initialMass={mass}
+              initialRotation={rotationSpeed}
             />
           ) : (
             <ResultsPanel

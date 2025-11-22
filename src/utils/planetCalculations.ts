@@ -30,7 +30,9 @@ export function calculateCloudColor(elementParts: Record<string, number>): strin
 
 /**
  * Calculate luminosity based on star type and distance
- * Uses inverse square law: intensity decreases with square of distance
+ * Uses a custom interpolation curve for gradual falloff with visibility at all distances
+ *
+ * Target falloff: 30% at 0.1 AU, 2% at 10.0 AU (linear interpolation)
  */
 export function calculateLuminosity(starType: string, distance: number = 1.0): number {
   // Base stellar luminosity by star class
@@ -46,11 +48,17 @@ export function calculateLuminosity(starType: string, distance: number = 1.0): n
 
   const baseLuminosity = baseLuminosityMap[starType] || 1.0;
 
-  // Apply inverse square law: L_observed = L_star / (distance^2)
-  // Clamp to reasonable range (0.1 to 10)
-  const observedLuminosity = baseLuminosity / (distance * distance);
+  // Calculate the maximum luminosity (at closest distance 0.1 AU)
+  const maxLuminosity = baseLuminosity / (0.1 * 0.1);
 
-  return Math.max(0.1, Math.min(10, observedLuminosity));
+  // Clamp distance to valid range
+  const clampedDistance = Math.max(0.1, Math.min(10, distance));
+
+  // Linear interpolation from 30% at 0.1 AU to 2% at 10 AU
+  const t = (clampedDistance - 0.1) / (10.0 - 0.1);
+  const percentOfMax = 0.3 - (t * 0.28); // Goes from 30% to 2%
+
+  return maxLuminosity * percentOfMax;
 }
 
 /**
