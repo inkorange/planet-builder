@@ -58,7 +58,7 @@ export function calculateHabitabilityScore(
     };
   }
 
-  const totalScore = Math.round(
+  let totalScore = Math.round(
     (factors.temperature.score +
       factors.atmosphere.score +
       factors.water.score +
@@ -68,6 +68,20 @@ export function calculateHabitabilityScore(
       factors.rotation.score) /
       7
   );
+
+  // Temperature is a deal-breaker: if it's 0 (impossible for life),
+  // the planet is uninhabitable regardless of other factors
+  if (factors.temperature.score === 0) {
+    totalScore = 0;
+  }
+  // If temperature is critically low (1-10), cap the total score
+  else if (factors.temperature.score <= 10) {
+    totalScore = Math.min(totalScore, 15);
+  }
+  // If temperature is very challenging (11-20), significantly limit total score
+  else if (factors.temperature.score <= 20) {
+    totalScore = Math.min(totalScore, 30);
+  }
 
   const rating = getRating(totalScore);
 
@@ -79,35 +93,74 @@ export function calculateHabitabilityScore(
 }
 
 function scoreTemperature(temp: number): { score: number; reason: string } {
+  // Optimal range for life
   if (temp >= 273 && temp <= 310) {
     return {
       score: 100,
       reason: "Optimal temperature range for liquid water and life",
     };
-  } else if (temp >= 250 && temp <= 350) {
+  }
+
+  // Challenging but potentially habitable
+  else if (temp >= 250 && temp <= 350) {
     return {
       score: 70,
       reason: "Challenging but potentially habitable temperature",
     };
-  } else if (temp >= 200 && temp <= 400) {
+  }
+
+  // Extreme but not impossible
+  else if (temp >= 200 && temp <= 400) {
     return {
       score: 40,
       reason: "Extreme temperature - very difficult for life",
     };
-  } else if (temp < 100) {
+  }
+
+  // Very hot - approaching complete uninhabitability
+  else if (temp > 400 && temp <= 600) {
+    return {
+      score: 15,
+      reason: "Extremely hot - hostile to known life forms",
+    };
+  }
+
+  // Scorching - nearly impossible
+  else if (temp > 600 && temp <= 1000) {
+    return {
+      score: 5,
+      reason: "Scorching temperatures - surface likely molten, no chance for life",
+    };
+  }
+
+  // Inferno - absolutely impossible (hotter than Venus)
+  else if (temp > 1000) {
+    return {
+      score: 0,
+      reason: "Inferno world - temperatures exceed all possibility of life",
+    };
+  }
+
+  // Very cold ranges
+  else if (temp >= 100 && temp < 200) {
+    return {
+      score: 20,
+      reason: "Very cold - water frozen, challenging for life",
+    };
+  }
+
+  else if (temp >= 50 && temp < 100) {
     return {
       score: 10,
       reason: "Frozen world - minimal potential for complex life",
     };
-  } else if (temp > 500) {
+  }
+
+  // Absolute zero territory - completely frozen
+  else {
     return {
-      score: 5,
-      reason: "Scorching temperatures - hostile to known life",
-    };
-  } else {
-    return {
-      score: 20,
-      reason: "Temperature outside habitable range",
+      score: 0,
+      reason: "Near absolute zero - all molecular activity ceases, impossible for life",
     };
   }
 }

@@ -9,9 +9,9 @@ interface PageLayoutProps {
 
 export function PageLayout({ children, showHeader = true }: PageLayoutProps) {
   return (
-    <Flex direction="column" style={{ minHeight: "100vh" }}>
+    <Flex direction="column" style={{ height: "100vh" }}>
       {showHeader && <Header />}
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, minHeight: 0 }}>
         {children}
       </main>
     </Flex>
