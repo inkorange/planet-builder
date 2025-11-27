@@ -11,7 +11,7 @@ export function PageLayout({ children, showHeader = true }: PageLayoutProps) {
   return (
     <Flex direction="column" style={{ height: "100vh" }}>
       {showHeader && <Header />}
-      <main style={{ flex: 1, minHeight: 0 }}>
+      <main style={{ flex: 1, minHeight: 0, paddingTop: showHeader ? "65px" : 0 }}>
         {children}
       </main>
     </Flex>
