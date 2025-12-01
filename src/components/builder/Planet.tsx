@@ -18,10 +18,12 @@ interface PlanetProps {
   classification: PlanetClassification;
   isVisible: boolean;
   atmosphereScore: number;
+  waterScore: number; // 0-100, habitability water score
   rotationSpeed: number; // hours per day
+  elementParts?: Record<string, number>; // Element composition for procedural generation
 }
 
-export function Planet({ classification, isVisible, atmosphereScore, rotationSpeed }: PlanetProps) {
+export function Planet({ classification, isVisible, atmosphereScore, waterScore, rotationSpeed, elementParts = {} }: PlanetProps) {
   const planetRef = useRef<THREE.Group>(null);
 
   // Rotate planet based on rotation period
@@ -46,11 +48,11 @@ export function Planet({ classification, isVisible, atmosphereScore, rotationSpe
 
     switch (classification.type) {
       case "gas-giant":
-        return <GasGiantMaterial color={color} />;
+        return <GasGiantMaterial color={color} elementParts={elementParts} />;
 
       case "ice-giant":
         // Ice giant with smooth appearance (use custom shader later if needed)
-        return <GasGiantMaterial color={color} />;
+        return <GasGiantMaterial color={color} elementParts={elementParts} />;
 
       case "lava-world":
         return <LavaWorldMaterial color={color} />;
@@ -69,17 +71,17 @@ export function Planet({ classification, isVisible, atmosphereScore, rotationSpe
         return <IceWorldMaterial color={color} />;
 
       case "water-world":
-        return <WaterWorldMaterial color={color} />;
+        return <WaterWorldMaterial color={color} waterScore={waterScore} />;
 
       case "earth-like":
-        return <EarthLikeMaterial color={color} />;
+        return <EarthLikeMaterial color={color} waterScore={waterScore} />;
 
       case "rocky-terrestrial":
-        return <RockyTerrainMaterial color={color} />;
+        return <RockyTerrainMaterial color={color} waterScore={waterScore} />;
 
       default:
         // Barren
-        return <RockyTerrainMaterial color={color} />;
+        return <RockyTerrainMaterial color={color} waterScore={waterScore} />;
     }
   };
 

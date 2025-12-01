@@ -104,7 +104,11 @@ export function PlanetScene({
             atmosphereScore={
               calculateHabitabilityScore(planetClassification, elementParts, rotationSpeed).factors.atmosphere.score
             }
+            waterScore={
+              calculateHabitabilityScore(planetClassification, elementParts, rotationSpeed).factors.water.score
+            }
             rotationSpeed={rotationSpeed}
+            elementParts={elementParts}
           />
         )}
 

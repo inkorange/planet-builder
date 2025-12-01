@@ -11,7 +11,7 @@ export type ElementSymbol =
   | "N"  // Nitrogen
   | "Al" // Aluminum
   | "Ca" // Calcium
-  | "Na" // Sodium
+  | "Ar" // Argon
   | "K"  // Potassium
   | "P"  // Phosphorus
   | "Ni"; // Nickel

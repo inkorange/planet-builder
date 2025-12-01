@@ -5,8 +5,24 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { noiseShaderChunk } from "@/utils/proceduralNoise";
 
-export function WaterWorldMaterial({ color }: { color: string }) {
+interface WaterWorldMaterialProps {
+  color: string;
+  waterScore?: number; // 0-100, where 100 = abundant water
+}
+
+export function WaterWorldMaterial({ color, waterScore = 100 }: WaterWorldMaterialProps) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+
+  // Calculate island threshold based on water score
+  // Adjusted for procedural noise distribution
+  // Score 100 -> threshold 0.92 (92-95% ocean, tiny scattered islands)
+  // Score 75 -> threshold 0.85 (85% ocean, small islands)
+  // Score 50 -> threshold 0.78 (78% ocean - water worlds are still very watery)
+  // Score 25 -> threshold 0.71 (71% ocean, more substantial islands)
+  // Score 0 -> threshold 0.64 (64% ocean, large landmasses)
+  const islandThreshold = useMemo(() => {
+    return 0.64 + (waterScore / 100) * 0.28;
+  }, [waterScore]);
 
   const uniforms = useMemo(
     () => ({
@@ -14,8 +30,9 @@ export function WaterWorldMaterial({ color }: { color: string }) {
       oceanColor: { value: new THREE.Color(color) },
       islandColor: { value: new THREE.Color("#8b7355") },
       beachColor: { value: new THREE.Color("#d4a574") },
+      islandThreshold: { value: islandThreshold },
     }),
-    [color]
+    [color, islandThreshold]
   );
 
   useFrame((state) => {
@@ -44,6 +61,7 @@ export function WaterWorldMaterial({ color }: { color: string }) {
     uniform vec3 islandColor;
     uniform vec3 beachColor;
     uniform float time;
+    uniform float islandThreshold;
 
     varying vec3 vNormal;
     varying vec3 vPosition;
@@ -54,10 +72,10 @@ export function WaterWorldMaterial({ color }: { color: string }) {
 
       // Generate scattered islands
       float islandNoise = fbm(pos * 6.0, 5);
-      float islandMask = step(0.75, islandNoise); // Only highest elevation becomes islands
+      float islandMask = step(islandThreshold, islandNoise); // Dynamic island coverage
 
-      // Beach transition
-      float beachMask = smoothstep(0.74, 0.76, islandNoise);
+      // Beach transition - slightly below island threshold
+      float beachMask = smoothstep(islandThreshold - 0.02, islandThreshold, islandNoise);
 
       // Animated wave pattern on ocean
       float wavePattern = sin(pos.x * 20.0 + time) * cos(pos.z * 20.0 + time) * 0.5 + 0.5;
@@ -67,11 +85,11 @@ export function WaterWorldMaterial({ color }: { color: string }) {
       vec3 finalColor;
 
       if (islandMask > 0.5) {
-        // Island terrain
-        finalColor = mix(beachColor, islandColor, smoothstep(0.76, 0.8, islandNoise));
+        // Island terrain - blend from beach to rocky island based on elevation
+        finalColor = mix(beachColor, islandColor, smoothstep(islandThreshold, islandThreshold + 0.05, islandNoise));
       } else {
         // Ocean with depth and wave variation
-        float depth = 1.0 - islandNoise / 0.75;
+        float depth = 1.0 - islandNoise / islandThreshold;
         vec3 deepOcean = oceanColor * 0.6;
         vec3 shallowOcean = oceanColor * 1.3;
 

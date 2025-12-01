@@ -43,11 +43,11 @@ export const ELEMENTS: Element[] = [
     symbol: "C",
     name: "Carbon",
     atomicNumber: 6,
-    color: "#696969",
+    color: "#4169E1", // Royal blue for methane's signature blue color
     defaultPercentage: 0,
     category: "nonmetal",
     description:
-      "Backbone of organic chemistry and atmospheric evolution.",
+      "Backbone of organic chemistry. Combines with hydrogen to form methane (CH₄), giving ice giants their blue color.",
   },
   {
     symbol: "Si",
@@ -97,7 +97,7 @@ export const ELEMENTS: Element[] = [
     defaultPercentage: 0,
     category: "gas",
     description:
-      "Key atmospheric regulator. Moderates pressure and temperature.",
+      "Key atmospheric regulator. Combines with hydrogen to form ammonia (NH₃) in gas giants.",
   },
   {
     symbol: "Al",
@@ -120,14 +120,14 @@ export const ELEMENTS: Element[] = [
       "Important in rock formation. Regulates carbon storage.",
   },
   {
-    symbol: "Na",
-    name: "Sodium",
-    atomicNumber: 11,
-    color: "#FFA07A",
+    symbol: "Ar",
+    name: "Argon",
+    atomicNumber: 18,
+    color: "#E0B0FF", // Mauve/lavender
     defaultPercentage: 0,
-    category: "metal",
+    category: "gas",
     description:
-      "Common in crustal minerals and planetary oceans.",
+      "Noble gas common in planetary atmospheres. Third most abundant gas in Earth's atmosphere.",
   },
   {
     symbol: "K",
