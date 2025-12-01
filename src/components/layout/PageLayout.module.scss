@@ -1,0 +1,19 @@
+.main {
+  flex: 1;
+  min-height: 0;
+  padding-top: 65px;
+
+  @media (max-width: 1024px) {
+    padding-top: 50px;
+  }
+
+  @media (max-width: 640px) {
+    padding-top: 42px;
+  }
+}
+
+.mainNoHeader {
+  flex: 1;
+  min-height: 0;
+  padding-top: 0;
+}

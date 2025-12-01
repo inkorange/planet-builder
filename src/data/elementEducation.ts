@@ -144,17 +144,17 @@ export const ELEMENT_EDUCATION: Record<string, ElementEducation> = {
     ],
     realWorldExample: "Earth has extensive limestone deposits; CAIs (calcium-aluminum inclusions) are oldest solar system materials",
   },
-  Na: {
-    symbol: "Na",
-    role: "Mineral Formation & Salts",
-    planetaryFunction: "Forms salts and minerals, creates tenuous atmospheres",
-    abundance: "Moderately common in rocky planets",
+  Ar: {
+    symbol: "Ar",
+    role: "Atmospheric Noble Gas",
+    planetaryFunction: "Inert atmospheric component, traces volcanic outgassing history",
+    abundance: "Common in planetary atmospheres",
     effects: [
-      "Creates salt deposits",
-      "Forms thin sodium atmospheres (Mercury)",
-      "Component of feldspar minerals",
+      "Third most abundant gas in Earth's atmosphere (0.93%)",
+      "Indicator of volcanic degassing",
+      "Present in gas giant atmospheres",
     ],
-    realWorldExample: "Earth's oceans contain sodium chloride (salt); Mercury has thin sodium atmosphere",
+    realWorldExample: "Earth's atmosphere is 0.93% argon; Mars has 2% argon atmosphere from ancient volcanism",
   },
   K: {
     symbol: "K",

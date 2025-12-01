@@ -169,6 +169,24 @@ export const PLANET_PRESETS: PlanetPreset[] = [
     rotationSpeed: 48,
   },
   {
+    id: "neptune",
+    name: "Neptune-like",
+    description: "Blue ice giant with methane atmosphere",
+    elementParts: {
+      H: 40,
+      He: 25,
+      C: 15, // Methane (CH₄) - gives blue color
+      O: 10, // Water ice (H₂O)
+      N: 5,  // Ammonia (NH₃)
+      Si: 3,
+      Fe: 2,
+    },
+    mass: 17.0,
+    distance: 30.0,
+    starType: "G",
+    rotationSpeed: 16,
+  },
+  {
     id: "desert-world",
     name: "Desert World",
     description: "Dry rocky planet with minimal water",

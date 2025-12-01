@@ -5,8 +5,24 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { noiseShaderChunk } from "@/utils/proceduralNoise";
 
-export function EarthLikeMaterial({ color }: { color: string }) {
+interface EarthLikeMaterialProps {
+  color: string;
+  waterScore?: number; // 0-100, where 100 = abundant water
+}
+
+export function EarthLikeMaterial({ color, waterScore = 100 }: EarthLikeMaterialProps) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+
+  // Calculate water level based on water score
+  // Adjusted for procedural noise distribution (centered around 0.4-0.6)
+  // Score 100 -> waterLevel 0.85 (85-90% ocean coverage, water world)
+  // Score 75 -> waterLevel 0.7 (70-75% ocean)
+  // Score 50 -> waterLevel 0.55 (50% ocean, Earth-like balance)
+  // Score 25 -> waterLevel 0.4 (25% ocean, 75% land)
+  // Score 0 -> waterLevel 0.25 (minimal ocean, mostly land/desert)
+  const waterLevel = useMemo(() => {
+    return 0.25 + (waterScore / 100) * 0.6;
+  }, [waterScore]);
 
   const uniforms = useMemo(
     () => ({
@@ -16,8 +32,9 @@ export function EarthLikeMaterial({ color }: { color: string }) {
       landColor: { value: new THREE.Color("#2e8b57") },
       mountainColor: { value: new THREE.Color("#8b7355") },
       snowColor: { value: new THREE.Color("#ffffff") },
+      waterLevel: { value: waterLevel },
     }),
-    [color]
+    [color, waterLevel]
   );
 
   useFrame((state) => {
@@ -67,6 +84,7 @@ export function EarthLikeMaterial({ color }: { color: string }) {
     uniform vec3 mountainColor;
     uniform vec3 snowColor;
     uniform float time;
+    uniform float waterLevel;
 
     varying vec3 vNormal;
     varying vec3 vPosition;
@@ -98,9 +116,8 @@ export function EarthLikeMaterial({ color }: { color: string }) {
       float terrain = fbm(pos * 4.0, 4) * 0.3;
       float mountains = ridgedNoise(pos * 8.0, 3) * 0.2;
 
-      // Water level adjusted to show more ocean
+      // Water level is dynamic based on water score
       // Lower = more ocean, Higher = more land
-      float waterLevel = 0.52;
       bool isOcean = elevation < waterLevel;
 
       // Calculate color based on elevation

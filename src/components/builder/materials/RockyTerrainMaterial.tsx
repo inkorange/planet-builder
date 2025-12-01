@@ -4,14 +4,33 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import { noiseShaderChunk } from "@/utils/proceduralNoise";
 
-export function RockyTerrainMaterial({ color }: { color: string }) {
+interface RockyTerrainMaterialProps {
+  color: string;
+  waterScore?: number; // 0-100, where 100 = abundant water
+}
+
+export function RockyTerrainMaterial({ color, waterScore = 0 }: RockyTerrainMaterialProps) {
+  // Calculate water level based on water score
+  // Adjusted for the noise distribution which centers around 0.4-0.6
+  const waterLevel = useMemo(() => {
+    if (waterScore <= 0) return 0; // No water at all
+    // Map water score to terrain threshold:
+    // Score 100 -> 0.85 (covers most terrain, ~85% ocean)
+    // Score 50 -> 0.6 (balanced, ~50% ocean)
+    // Score 20 -> 0.45 (limited water, ~20% ocean)
+    // Score 5 -> 0.35 (very dry, ~5% ocean)
+    return 0.3 + (waterScore / 100) * 0.55;
+  }, [waterScore]);
+
   const uniforms = useMemo(
     () => ({
       rockColor: { value: new THREE.Color(color) },
       darkRockColor: { value: new THREE.Color(color).multiplyScalar(0.6) },
       dustColor: { value: new THREE.Color(color).multiplyScalar(0.8) },
+      oceanColor: { value: new THREE.Color("#0077be") },
+      waterLevel: { value: waterLevel },
     }),
-    [color]
+    [color, waterLevel]
   );
 
   const vertexShader = `
@@ -55,6 +74,8 @@ export function RockyTerrainMaterial({ color }: { color: string }) {
     uniform vec3 rockColor;
     uniform vec3 darkRockColor;
     uniform vec3 dustColor;
+    uniform vec3 oceanColor;
+    uniform float waterLevel;
 
     varying vec3 vNormal;
     varying vec3 vObjectPosition;
@@ -83,10 +104,17 @@ export function RockyTerrainMaterial({ color }: { color: string }) {
       float craterDepth = smoothstep(0.7, 0.75, craterNoise);
       float mountains = ridgedNoise(pos * 6.0, 5) * 0.5;
 
+      // Check for ocean based on water level
+      bool isOcean = waterLevel > 0.0 && elevation < waterLevel;
+
       // Color based on elevation and features
       vec3 finalColor;
 
-      if (craters > 0.5) {
+      if (isOcean) {
+        // Ocean with depth variation
+        float depth = (waterLevel - elevation) / waterLevel;
+        finalColor = mix(oceanColor * 1.2, oceanColor * 0.6, depth);
+      } else if (craters > 0.5) {
         // Crater interiors are darker
         finalColor = mix(darkRockColor, rockColor, craterDepth);
       } else if (elevation > 0.6) {
